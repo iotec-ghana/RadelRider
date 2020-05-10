@@ -1,0 +1,17 @@
+{
+  "name": "RadelRider",
+  "displayName": "RadelRider",
+  "expo": {
+    "name": "RadelRider",
+    "slug": "RadelRider",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
