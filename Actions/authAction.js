@@ -1,23 +1,23 @@
-import {SIGN_IN, SIGN_OUT, REGISTER, CHECK_LOGIN_STATUS} from './types';
-import axios from 'axios';
-import {BASE_URL} from '../constants';
-import {AsyncStorage} from 'react-native';
+import { SIGN_IN, SIGN_OUT, REGISTER, CHECK_LOGIN_STATUS } from "./types";
+import axios from "axios";
+import { BASE_URL } from "../constants";
+import { AsyncStorage } from "react-native";
 
-export const isSignedIn = data => async dispatch => {
+export const isSignedIn = (data) => async (dispatch) => {
   try {
     //console.log(data);
-    const response = await axios.post(BASE_URL + '/login/', data);
+    const response = await axios.post(BASE_URL + "/auth/login/", data);
     const authData = {
       isAuthenticated: true,
       user: response.data,
     };
 
-    await AsyncStorage.setItem('authdata', JSON.stringify(authData));
+    await AsyncStorage.setItem("authdata", JSON.stringify(authData));
 
     dispatch({
       type: SIGN_IN,
       payload: authData,
-      error: '',
+      error: "",
     });
     //navigation.navigate('Main');
   } catch (e) {
@@ -26,27 +26,27 @@ export const isSignedIn = data => async dispatch => {
     };
     console.log(e.message);
     if (
-      e.message === 'Request failed with status code 500' ||
-      e.message === 'Request failed with status code 502' ||
-      e.message === 'Request failed with status code 503' ||
-      e.message === 'Request failed with status code 404'
+      e.message === "Request failed with status code 500" ||
+      e.message === "Request failed with status code 502" ||
+      e.message === "Request failed with status code 503" ||
+      e.message === "Request failed with status code 404"
     ) {
       dispatch({
         type: SIGN_IN,
         payload: authData,
-        error: 'Internal server error',
+        error: "Internal server error",
       });
     } else {
       dispatch({
         type: SIGN_IN,
         payload: authData,
-        error: 'Your email or password is incorrect. Please try again',
+        error: "Your email or password is incorrect. Please try again",
       });
     }
   }
 };
 
-export const isSignedOut = navigation => async dispatch => {
+export const isSignedOut = (navigation) => async (dispatch) => {
   try {
     // set header authorization token
     // const config = {
@@ -58,18 +58,18 @@ export const isSignedOut = navigation => async dispatch => {
     //   config,
     // );
 
-    await AsyncStorage.removeItem('authdata');
+    await AsyncStorage.removeItem("authdata");
 
     dispatch({
       type: SIGN_OUT,
     });
 
-    navigation.navigate('Intro');
+    navigation.navigate("Intro");
   } catch (e) {}
 };
-export const loginStatus = () => async dispatch => {
+export const loginStatus = () => async (dispatch) => {
   try {
-    const user = await AsyncStorage.getItem('authdata');
+    const user = await AsyncStorage.getItem("authdata");
     const data = JSON.parse(user);
 
     dispatch({
@@ -78,9 +78,9 @@ export const loginStatus = () => async dispatch => {
     });
   } catch (e) {}
 };
-export const RegisterUser = (payload, navigation) => async dispatch => {
+export const RegisterUser = (payload, navigation) => async (dispatch) => {
   try {
-    const response = await axios.post(BASE_URL + '/register/', payload);
+    const response = await axios.post(BASE_URL + "/auth/register/", payload);
     // const authData = {
     //   isAuthenticated: true,
     //   user: response.data,
@@ -94,12 +94,9 @@ export const RegisterUser = (payload, navigation) => async dispatch => {
     //   error2: '',
     // });
     // console.log(response.data.phone_number);
-    navigation.navigate('PhoneVerificationActivity', {
-      userid: response.data.id,
-      phone: response.data.phone_number,
-      token: response.data.token,
-      password: payload.password,
-      email: payload.email,
+    const { email, password } = response.data;
+    navigation.navigate("GetStartedActivity", {
+      user: { password: password, email: email },
     });
   } catch (e) {
     console.log(e);
@@ -107,21 +104,21 @@ export const RegisterUser = (payload, navigation) => async dispatch => {
       isAuthenticated: false,
     };
     if (
-      e.message === 'Request failed with status code 500' ||
-      e.message === 'Request failed with status code 502' ||
-      e.message === 'Request failed with status code 503' ||
-      e.message === 'Request failed with status code 404'
+      e.message === "Request failed with status code 500" ||
+      e.message === "Request failed with status code 502" ||
+      e.message === "Request failed with status code 503" ||
+      e.message === "Request failed with status code 404"
     ) {
       dispatch({
         type: REGISTER,
         payload: authData,
-        error2: 'Internal server error',
+        error2: "Internal server error",
       });
     } else {
       dispatch({
         type: REGISTER,
         payload: authData,
-        error2: 'Email is  already taken',
+        error2: "Email is  already taken",
       });
     }
   }

@@ -7,22 +7,48 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ImageBackground,
 } from 'react-native';
-import {StatusBarColor} from '../../constants';
+import {StatusBarColor} from '../constants';
+import {loginStatus} from '../Actions/authAction';
+import {connect} from 'react-redux';
+import {StackActions} from '@react-navigation/native';
 const windowWidth = Dimensions.get('window').width;
 
-export default class Intro extends Component {
+class Intro extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    //props.loginStatus();
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <StatusBar backgroundColor={StatusBarColor} barStyle="dark-content" />
+        <StatusBar
+          translucent={true}
+          backgroundColor={'transparent'}
+          barStyle="dark-content"
+        />
         <Image
-          source={require('../../assets/deedat.jpg')}
+          source={require('../assets/city.jpg')}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              // Temporary Workaround:
+              // Current (imperfect yet) implementation of <Image> overwrites width and height styles
+              // (which is not quite correct), and these styles conflict with explicitly set styles
+              // of <ImageBackground> and with our internal layout model here.
+              // So, we have to proxy/reapply these styles explicitly for actual <Image> component.
+              // This workaround should be removed after implementing proper support of
+              // intrinsic content size of the <Image>.
+              width: windowWidth.width,
+              height: windowWidth.height,
+            },
+          ]}
+        />
+        <Image
+          source={require('../assets/logo.png')}
           style={{height: 100, width: 100, borderRadius: 100, marginTop: 40}}
         />
         <Text
@@ -32,9 +58,9 @@ export default class Intro extends Component {
             marginTop: 0,
             textAlign: 'left',
             fontWeight: 'bold',
-            opacity: 0.5,
+            color: '#fff',
           }}>
-          Radel
+          Radel Rider
         </Text>
         <View style={styles.buttons}>
           <Text
@@ -44,7 +70,8 @@ export default class Intro extends Component {
               marginTop: 0,
               textAlign: 'center',
               fontWeight: 'bold',
-              opacity: 0.5,
+
+              color: '#fff',
             }}>
             An Easy, Reliable and quick way to get items around
           </Text>
@@ -64,21 +91,28 @@ export default class Intro extends Component {
     );
   }
 }
+const mapStateToProps = state => ({
+  authStatus: state.auth,
+  error: state.auth.error,
+});
+export default connect(
+  mapStateToProps,
+  {loginStatus},
+)(Intro);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     // backgroundColor: "#ff8900",
     alignItems: 'center',
     backgroundColor: '#fff',
-
     width: windowWidth,
   },
   buttons: {
     width: windowWidth,
-    backgroundColor: '#fff',
+    backgroundColor: '#00000000',
     position: 'absolute', //Here is the trick
     bottom: 0, //Here is the trick
-    padding: 20,
+    padding: 40,
   },
 
   signup: {
@@ -98,11 +132,12 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 3,
     marginTop: 10,
-    borderColor: '#e7564c',
-    borderWidth: 1,
+    // borderColor: '#e7564c',
+    // borderWidth: 1,
+    backgroundColor: '#fff',
   },
   loginText: {
-    color: '#e7564c',
+    color: '#000',
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 16,

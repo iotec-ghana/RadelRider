@@ -1,20 +1,15 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {Component} from 'react';
-import {Header, Left, Body, Right, Button, Title, Container} from 'native-base';
-import {StyleSheet, TouchableOpacity, View, Text, Switch} from 'react-native';
+import {Header, Left, Body, Right, Button, Title} from 'native-base';
+import {StyleSheet, TouchableOpacity, View, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 export default class Toolbar extends Component {
-  // state = {
-  //   isEnabled: true,
-  // };
-  // toggleSwitch = () => {
-  //   this.setState({isEnabled: !this.state.isEnabled});
-  // };
   render() {
     return (
-      <View>
-        <Header style={styles.header}>
+      <View style={styles.header,{backgroundColor:this.props.bg}}>
+        <Header transparent>
           <Left>
             <Button
               transparent
@@ -23,31 +18,27 @@ export default class Toolbar extends Component {
                   ? this.props.navigation.goBack(null)
                   : this.props.opendrawer();
               }}>
-              <Icon
+              <Feather
                 name={this.props.icon}
                 size={30}
-                color="#000"
+                color={this.props.iconColor}
                 style={{margin: 0}}
               />
 
               {/* <Text>Back</Text> */}
             </Button>
           </Left>
-
-          <Body>
-            <Switch
-            
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={true ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              //onValueChange={this.toggleSwitch()}
-              value={true}
-            />
-            {/* <Title>
-              <Text style={{color:"#000"}}>hjgfbhj</Text>
-            </Title> */}
-          </Body>
-
+          {this.props.body ? (
+            <Body>
+              <Title
+                style={{
+                  color: this.props.titleColor,
+                  margin: 0,
+                }}>
+                {this.props.body}
+              </Title>
+            </Body>
+          ) : null}
           <Right>
             {this.props.right ? (
               <Button
@@ -59,7 +50,7 @@ export default class Toolbar extends Component {
                   style={{
                     color: this.props.rightTextColor,
                     fontWeight: 'bold',
-                    fontSize: 14,
+                    fontSize: 16,
                   }}>
                   {this.props.right}
                 </Text>
@@ -73,7 +64,8 @@ export default class Toolbar extends Component {
 }
 const styles = StyleSheet.create({
   header: {
-    elevation: 0,
-    backgroundColor: '#fff',
-  },
+   elevation: 0,
+  
+    paddingTop: 0,
+  }, 
 });

@@ -1,3 +1,4 @@
+
 import {GET_CURRENT_LOCATION, GET_DESTINATION_LOCATION} from './types';
 
 export const getCurrentLocation = data => {
