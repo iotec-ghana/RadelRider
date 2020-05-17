@@ -1,6 +1,11 @@
 {
   "name": "RadelRider",
   "displayName": "RadelRider",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#000000"
+  },
   "expo": {
     "name": "RadelRider",
     "slug": "RadelRider",
