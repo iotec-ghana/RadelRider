@@ -20,6 +20,7 @@ import MapView, {
   AnimatedRegion,
   Polyline,
 } from "react-native-maps";
+import UserMarker from './Layouts/UserMarker';
 import Spinner from "react-native-loading-spinner-overlay";
 import haversine from "haversine";
 import MapViewDirections from "react-native-maps-directions";
@@ -353,7 +354,7 @@ class MainActivity extends Component {
                   }
                   coordinate={this.getCurrentRegion()}
                 >
-                  <Feather name={"navigation-2"} size={24} color={"#3d6dfe"} />
+                 <UserMarker/>
                   {/* <Animated.View style={styles.marker}>
                     <View style={styles.dot} />
                     <View style={styles.pulse} />
