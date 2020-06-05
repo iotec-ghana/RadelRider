@@ -29,7 +29,7 @@ export default class UserMarker extends Component {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#e7564c',
+            backgroundColor: '#3d6dfe',
             height: 50,
             width: 50,
             borderRadius: 125,
@@ -41,7 +41,7 @@ export default class UserMarker extends Component {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#e7564c',
+            backgroundColor: '#3d6dfe',
             height: 18,
             width: 18,
             borderRadius: 25,

@@ -305,6 +305,7 @@ class MainActivity extends Component {
     }
     return (
       <View style={{ flex: 1 }}>
+       
         <Drawer
           ref={(ref) => {
             this.drawer = ref;
@@ -327,8 +328,7 @@ class MainActivity extends Component {
               <MapView
                 provider={PROVIDER_GOOGLE}
                 showUserLocation
-                followUserLocation
-               
+                followsUserLocation={false}
                 region={this.getCurrentRegion()}
                 //onRegionChange={this.getCurrentRegion()}
                 style={{ ...StyleSheet.absoluteFillObject }}
@@ -439,13 +439,13 @@ class MainActivity extends Component {
               </MapView>
             )}
 
-            <HeaderHome
+            {/* <HeaderHome
               icon={"menu"}
               route={"ProfileActivity"}
               online={true}
               icon={"search"}
               navigation={this.props.navigation}
-            />
+            /> */}
           </View>
         </Drawer>
       </View>

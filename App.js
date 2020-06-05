@@ -75,12 +75,7 @@ export default class App extends Component {
         <MainStack.Screen
           name="Intro"
           component={Intro}
-          options={{
-            transitionSpec: {
-              open: config,
-              close: config,
-            },
-          }}
+          z
         />
         <MainStack.Screen name="Login"  options={{
             transitionSpec: {

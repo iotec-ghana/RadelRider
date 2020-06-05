@@ -216,7 +216,7 @@ class ProfileActivity extends Component {
   }
   render() {
     console.log(this.props.authStatus.isVerified);
-    const isVerified= JSON.stringify(this.props.authStatus.isVerified)
+    const isVerified = JSON.stringify(this.props.authStatus.isVerified);
     return (
       <SafeAreaView>
         <ScrollView>
@@ -271,9 +271,11 @@ class ProfileActivity extends Component {
                 </Text>
                 {isVerified ? (
                   <TouchableOpacity
+                    accessible={true}
+                    accessibilityLabel="Tap me!"
                     onPress={() =>
-                      this.props.navigation.navigate("AddVehicleActivity",{
-                        token:this.props.authStatus.token
+                      this.props.navigation.navigate("AddVehicleActivity", {
+                        token: this.props.authStatus.token,
                       })
                     }
                   >

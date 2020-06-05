@@ -18,6 +18,13 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "description": "alpha test 1"
+    "description": "alpha test 1",
+    "ios": {
+      "bundleIdentifier": "com.iotecgh.radeldriver"
+    },
+    "android": {
+      "package": "com.iotecgh.radeldriver"
+    },
+    "entryPoint": "node_modules/expo/AppEntry.js"
   }
 }

@@ -6,6 +6,7 @@ import MapActivity from "./MapActivity";
 import MyEarningsActivity from "./MyEarningsActivity";
 import SettingsActivity from "./SettingsActivity";
 import Toolbar from "./Layouts/Toolbar";
+import ProfileActivity from './ProfileActivity';
 const Tab = createMaterialBottomTabNavigator();
 export default class HomeActivity extends Component {
   constructor(props) {
@@ -27,6 +28,9 @@ export default class HomeActivity extends Component {
             } else if (route.name === "Settings") {
               iconName = focused ? "settings" : "settings";
             }
+            else if (route.name === "Profile") {
+              iconName = focused ? "user" : "user";
+            }
 
             // You can return any component that you like here!
             return <Feather name={iconName} size={24} color={color} />;
@@ -40,6 +44,7 @@ export default class HomeActivity extends Component {
         <Tab.Screen name="Home" component={MapActivity} />
         <Tab.Screen name="Earnings" component={MyEarningsActivity} />
         <Tab.Screen name="Settings" component={SettingsActivity} />
+        <Tab.Screen name="Profile" component={ProfileActivity} />
       </Tab.Navigator>
     );
   }
