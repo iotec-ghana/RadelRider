@@ -15,6 +15,7 @@
     "@react-navigation/stack": "^5.2.10",
     "axios": "^0.19.2",
     "expo": "~37.0.3",
+    "expo-background-fetch": "^8.1.0",
     "expo-constants": "~9.0.0",
     "expo-font": "~8.1.1",
     "expo-location": "~8.1.0",
@@ -33,6 +34,7 @@
     "react-native-loading-spinner-overlay": "^1.1.0",
     "react-native-maps": "^0.26.1",
     "react-native-maps-directions": "^1.8.0",
+    "react-native-maps-navigation": "0.0.14",
     "react-native-paper": "^3.10.1",
     "react-native-reanimated": "~1.7.0",
     "react-native-safe-area-context": "^0.7.3",
@@ -45,7 +47,7 @@
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "rn-bottom-drawer": "^1.4.3",
-    "socket.io-client": "2.1.1"
+    "socket.io-client": "^2.1.1"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",

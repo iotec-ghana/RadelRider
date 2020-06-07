@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet, Image, StatusBar} from 'react-native';
 import {AsyncStorage} from 'react-native';
+import {primaryColor} from '.././../constants';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class SideBarHeader extends Component {
@@ -56,7 +57,7 @@ export default class SideBarHeader extends Component {
 }
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#e7564c',
+    backgroundColor: primaryColor,
     padding: 40,
   },
   nameText: {

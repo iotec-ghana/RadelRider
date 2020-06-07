@@ -39,7 +39,7 @@ export default class HomeActivity extends Component {
         labeled={false}
         activeColor="#3d6dfe"
         inactiveColor="gray"
-        barStyle={{ backgroundColor: "#00000000"}}
+        barStyle={{ backgroundColor: "#fff"}}
       >
         <Tab.Screen name="Home" component={MapActivity} />
         <Tab.Screen name="Earnings" component={MyEarningsActivity} />

@@ -13,6 +13,7 @@ import {
   Animated,
   StatusBar,
   Image,
+  Modal,
 } from "react-native";
 import MapView, {
   PROVIDER_GOOGLE,
@@ -20,7 +21,7 @@ import MapView, {
   AnimatedRegion,
   Polyline,
 } from "react-native-maps";
-import UserMarker from './Layouts/UserMarker';
+import UserMarker from "./Layouts/UserMarker";
 import Spinner from "react-native-loading-spinner-overlay";
 import haversine from "haversine";
 import MapViewDirections from "react-native-maps-directions";
@@ -42,20 +43,17 @@ import * as Location from "expo-location";
 import Sidebar from "./Layouts/Sidebar";
 import HeaderHome from "./Layouts/Header";
 import { Feather } from "@expo/vector-icons";
+import RiderDecisionDialogue from "./Layouts/RiderDecisionDialogue";
 
 const TAB_BAR_HEIGHT = 0;
 const { width, height } = Dimensions.get("window");
 import {
   establishConnectionToSocket,
-  ListenForRideRequest,
-  makeDecision,
-  disconnect,
+  broadCastLocationChange,
+  socket,
 } from "../socketFunctions";
-import io from "socket.io-client";
-const socket = io(PV_API, {
-  secure: true,
-  transports: ["websocket"],
-});
+import io from "socket.io-client/dist/socket.io";
+
 class MainActivity extends Component {
   constructor(props) {
     super(props);
@@ -72,6 +70,8 @@ class MainActivity extends Component {
       loading: true,
       customerDetails: null,
       customerMovement: null,
+      showmodal: false,
+      reqdetails: null,
       originName: props.originName,
       prevLatLng: {},
       bearing: 0,
@@ -90,10 +90,6 @@ class MainActivity extends Component {
     };
   }
 
-  componentWillUnmount() {
-    //disconnect({ riderid: this.props.authStatus.user.id, rider: true });
-    console.log("unmounted");
-  }
   listenForCustomerMovement() {
     console.log("dsfsdf" + this.state.customerDetails);
     socket.on(
@@ -130,12 +126,23 @@ class MainActivity extends Component {
     }
   }
   async yes(userRequest) {
+    const { first_name, last_name, phone_number } = this.props.authStatus.user;
     this.makeDecision({
       ...userRequest,
       isAvailable: true,
+      first_name: first_name,
+      last_name: last_name,
+      license_number: "34423",
+      phone_number: phone_number,
     });
-    console.log(userRequest);
-    await this.setState({ has_customer: true, customerDetails: userRequest });
+
+    this.setState({
+      has_customer: true,
+      customerDetails: userRequest,
+      //reqdetails: null,
+      showmodal: false,
+    });
+    console.log(this.state.has_customer);
     //  this.listenForCustomerMovement();
   }
   no(userRequest) {
@@ -143,37 +150,91 @@ class MainActivity extends Component {
       ...userRequest,
       isAvailable: false,
     });
-  }
-  ListenForRideRequest() {
-    const riderid = this.props.authStatus.user.id;
-    socket.on("listening-for-requests-" + riderid, (userRequest) => {
-      console.log(userRequest);
-      Alert.alert(
-        "You got a passenger",
-        `pickup: ${userRequest.pickup}\nDropoff:${userRequest.destination}`,
-        [
-          {
-            text: "Decline",
-            onPress: () => this.no(userRequest),
-            style: "cancel",
-          },
-          {
-            text: "Accept",
-            onPress: () => this.yes(userRequest),
-
-            // tracking()t
-          },
-        ],
-        { cancelable: false }
-      );
+    this.setState({
+      has_customer: false,
+      customerDetails: null,
+      reqdetails: null,
+      showmodal: false,
     });
   }
+  ListenForRideRequest = () => {
+    if (!this.state.has_customer) {
+      const riderid = this.props.authStatus.user.id;
+      socket.on("listening-for-requests-" + riderid, (userRequest) => {
+        this.setState({ showmodal: true, reqdetails: userRequest });
+        // alert(userRequest);
+        // Alert.alert(
+        //   "You got a passenger",
+        //   `pickup: ${userRequest.pickup}\nDropoff:${userRequest.destination}`,
+        //   [
+        //     {
+        //       text: "Decline",
+        //       onPress: () => this.no(userRequest),
+        //       style: "cancel",
+        //     },
+        //     {
+        //       text: "Accept",
+        //       onPress: () => this.yes(userRequest),
+        //       // tracking()t
+        //     },
+        //   ],
+        //   { cancelable: false }
+        // );
+        // return <RiderDecisionDialogue/>
+      });
+    }
+  };
+  modal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={this.state.showmodal}
+        // onRequestClose={() => {
+        //   Alert.alert("Modal has been closed.");
+        // }}
+      >
+        <View style={styles.modalcontainer}>
+          <View style={styles.tripDetails}>
+            <Image
+              source={require("../assets/city.jpg")}
+              style={styles.thumbnail}
+            />
+            <View style={styles.metadata}>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Deedat Idriss
+              </Text>
+              <Text style={{ fontSize: 12, fontWeight: "bold" }}>
+                Pickup : Kasoa
+              </Text>
+              <Text style={{ fontSize: 12, fontWeight: "bold" }}>
+                Drop Off : Kaneshi
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.acceptButton}
+            onPress={() => this.yes(this.state.reqdetails)}
+          >
+            <Text style={styles.acceptButtonText}>Accept</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.declineButton}
+            onPress={() => this.no(this.state.reqdetails)}
+          >
+            <Text style={styles.declineButtonText}>Decline</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    );
+  };
   componentDidMount = async () => {
     await this.props.loginStatus();
+    console.log(this.props.authStatus);
     if (!this.props.authStatus.isAuthenticated) {
       this.props.navigation.dispatch(StackActions.replace("Intro"));
     }
-
+    establishConnectionToSocket({ riderid: this.props.authStatus.user.id });
     // const check = await Location.requestPermissionsAsync()
     // console.log(check)
     try {
@@ -181,7 +242,17 @@ class MainActivity extends Component {
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
       }
+      // listen for customer movements
+      if (this.state.has_customer) {
+        const { customerMovement } = this.state;
 
+        this.state.coordinateCustomer
+          .timing({
+            customerMovement,
+            duration,
+          })
+          .start();
+      }
       let pos = await Location.getCurrentPositionAsync({});
       const Oname = await this.getLocationName(data);
       const data = {
@@ -200,9 +271,9 @@ class MainActivity extends Component {
         ...data,
         riderid: this.props.authStatus.user.id,
       };
-
+      // alert(JSON.stringify(broadcastPayload));
       if (!this.state.has_customer) {
-        establishConnectionToSocket(broadcastPayload);
+        broadCastLocationChange(broadcastPayload);
         this.ListenForRideRequest();
       }
       Animated.timing(this.animation, {
@@ -214,7 +285,7 @@ class MainActivity extends Component {
         {
           enableHighAccuracy: true,
           distanceInterval: 1,
-          timeInterval: 100,
+          timeInterval: 10000,
         },
         async (position) => {
           const { latitude, longitude } = position.coords;
@@ -230,40 +301,22 @@ class MainActivity extends Component {
           await this.props.getCurrentLocation(newCoordinate);
           const duration = 1000;
           this.map.animateToRegion(this.getCurrentRegion(), 1000 * 2);
-          if (Platform.OS === "android") {
-            if (this.marker) {
-              this.marker._component.animateMarkerToCoordinate(
-                newCoordinate,
-                duration
-              );
-            }
-          } else {
-            this.state.coordinate
-              .timing({
-                newCoordinate,
-                duration,
-              })
-              .start();
-          }
 
-          // listen for customer movements
-          if (this.state.has_customer) {
-            const { customerMovement } = this.state;
-            if (Platform.OS === "android") {
-              if (this.markerCustomer) {
-                this.markerCustomer._component.animateMarkerToCoordinate(
-                  customerMovement,
-                  duration
-                );
-              }
-            } else {
-              this.state.coordinateCustomer
-                .timing({
-                  customerMovement,
-                  duration,
-                })
-                .start();
-            }
+          this.state.coordinate
+            .timing({
+              newCoordinate,
+              duration,
+            })
+            .start();
+
+          const newdata = {
+            ...newCoordinate,
+            ...data,
+            riderid: this.props.authStatus.user.id,
+          };
+          if (!this.state.has_customer) {
+            broadCastLocationChange(newdata);
+            this.ListenForRideRequest();
           }
           //this.state.coordinate.timing(newCoordinate).start();
 
@@ -287,16 +340,16 @@ class MainActivity extends Component {
   };
 
   getCurrentRegion = () => ({
-    latitude: this.state.latitude, 
+    latitude: this.state.latitude,
     longitude: this.state.longitude,
     latitudeDelta: LATITUDE_DELTA,
     longitudeDelta: LONGITUDE_DELTA,
   });
- 
+
   calcDistance = (newLatLng) => {
     const { prevLatLng } = this.state;
     return haversine(prevLatLng, newLatLng) || 0;
-  };  
+  };
 
   render() {
     const { has_customer } = this.state;
@@ -305,7 +358,6 @@ class MainActivity extends Component {
     }
     return (
       <View style={{ flex: 1 }}>
-       
         <Drawer
           ref={(ref) => {
             this.drawer = ref;
@@ -354,7 +406,7 @@ class MainActivity extends Component {
                   }
                   coordinate={this.getCurrentRegion()}
                 >
-                 <UserMarker/>
+                  <UserMarker />
                   {/* <Animated.View style={styles.marker}>
                     <View style={styles.dot} />
                     <View style={styles.pulse} />
@@ -364,38 +416,31 @@ class MainActivity extends Component {
                     <Animated.View style={[styles.ring]} />
                     <View style={styles.marker} />
                   </Animated.View> */}
-                 
                 </MapView.Marker.Animated>
-                 {this.state.has_customer ? (
-                    <Marker.Animated
-                      ref={(marker) => {
-                        this.markerCustomer = marker;
-                      }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        resizeMode: "contain",
+                {this.state.has_customer ? (
+                  <Marker.Animated
+                    ref={(marker) => {
+                      this.markerCustomer = marker;
+                    }}
+                    style={
+                      {
                         // transform: [
                         //   {
                         //     rotate: `${this.state.customerDetails.bearing}deg`,
                         //   },
                         // ],
-                        zIndex: 3,
-                      }}
-                      coordinate={{
-                        latitude: this.state.customerDetails.latitude,
-                        longitude: this.state.customerDetails.longitude,
-                      }}
-                    >
-                      <Marker
-                        coordinate={
-                          this.state.customerDetails.DestinationCoordinates
-                        }
-                      />
-                    </Marker.Animated> 
-                  ) : null}
- 
-                {this.state.has_customer && (
+                      }
+                    }
+                    coordinate={{
+                      latitude: this.state.customerDetails.latitude,
+                      longitude: this.state.customerDetails.longitude,
+                      latitudeDelta: LATITUDE_DELTA,
+                      longitudeDelta: LONGITUDE_DELTA,
+                    }}
+                  />
+                ) : null}
+
+                {this.state.has_customer ? (
                   <MapViewDirections
                     origin={this.props.origin}
                     destination={{
@@ -403,7 +448,7 @@ class MainActivity extends Component {
                       longitude: this.state.customerDetails.longitude,
                     }}
                     strokeWidth={3}
-                    strokeColor="#e7564c" 
+                    strokeColor="#3d6dfe"
                     optimizeWaypoints={true}
                     apikey={GOOGLE_MAPS_APIKEY}
                     onStart={(params) => {
@@ -422,7 +467,7 @@ class MainActivity extends Component {
                       // console.log(`Distance: ${result.distance} km`);
                       // console.log(`Duration: ${result.duration} min.`);
 
-                      this.mapView.fitToCoordinates(result.coordinates, {
+                      this.map.fitToCoordinates(result.coordinates, {
                         edgePadding: {
                           right: width / 50,
                           bottom: height / 50,
@@ -435,11 +480,16 @@ class MainActivity extends Component {
                       console.log("GOT AN ERROR");
                     }}
                   />
-                )}
+                ) : null}
               </MapView>
             )}
-
-            {/* <HeaderHome
+ <Toolbar
+              icon={'menu'}
+              notbackAction={true}
+              opendrawer={this.openDrawer}
+              navigation={this.props.navigation}
+            /> 
+            {/* <HeaderHome  
               icon={"menu"}
               route={"ProfileActivity"}
               online={true}
@@ -448,6 +498,7 @@ class MainActivity extends Component {
             /> */}
           </View>
         </Drawer>
+        {this.state.showmodal ? this.modal() : null}
       </View>
     );
   }
@@ -473,45 +524,52 @@ const styles = StyleSheet.create({
     width: 200,
     alignItems: "stretch",
   },
-  marker: {
-    position: "relative",
-  },
-  pulse: {
-    width: 10,
-    height: 10,
-    borderWidth: 15,
-    borderColor: "#7fd2e6",
-    borderRadius: 30,
-    backgroundColor: "#00a6cd",
-    zIndex: 10,
-    position: "absolute",
-  },
-  dot: {
-    position: "absolute",
-    height: 50,
-    width: 50,
-
-    zIndex: 2,
-    opacity: 0,
-    borderWidth: 10,
-    borderColor: "#938275",
-    backgroundColor: "#00000000",
-  },
-
-  markerWrap: {
-    alignItems: "center",
+  modalcontainer: {
+    padding: 20,
+    elevation: 80,
+    borderRadius: 10,
+    marginBottom: 60,
+    width: width - 20,
+    backgroundColor: "#fff",
+    marginLeft: 10,
     justifyContent: "center",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+  }, 
+  tripDetails: {
+    flexDirection: "row",
+  },
+  thumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 50,
+  },
+  metadata: {
+    padding: 10,
   },
 
-  ring: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-
-    backgroundColor: "rgba(130,4,150, 0.3)",
-    position: "absolute",
-    borderWidth: 1,
-    borderColor: "rgba(13,64,150, 0.5)",
+  acceptButton: {
+    marginTop: 10,
+    backgroundColor: "#3d6dfe",
+    paddingVertical: 15,
+    borderRadius: 3,
+  },
+  acceptButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  declineButton: {
+    marginTop: 10,
+    backgroundColor: "#e7564c",
+    paddingVertical: 15,
+    borderRadius: 3,
+  },
+  declineButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
 //

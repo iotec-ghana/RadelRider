@@ -115,10 +115,10 @@ class Login extends Component {
           ) : null}
           {!this.props.error == '' ? (
             <View style={styles.error}>
-              <Icon name="alert-circle" size={18} color="#e7564c" />
+              <Feather name="alert-circle" size={18} color="#e7564c" />
               <Text style={styles.errorText}>{this.props.error}</Text>
             </View>
-          ) : null}
+          ) : null} 
           <TouchableOpacity
             style={styles.loginButton}
             onPress={() => this.onSubmit()}>
