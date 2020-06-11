@@ -14,28 +14,28 @@ import {
   View,
   Text,
   StatusBar,
+  AsyncStorage,
 } from "react-native";
-import * as Location from "expo-location";
+
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import ProfileActivity from "./ProfileActivity";
 import Register from "./Register";
-import * as Font from "expo-font";
 import Login from "./Login";
 import Intro from "./Intro";
 import PhoneVerificationActivity from "./PhoneVerificationActivity";
 import GetStartedActivity from "./GetStartedActivity";
 import AddVehicleActivity from "./AddVehicleActivity";
 import HomeActivity from "./HomeActivity";
-import { render } from "react-dom";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import {
   establishConnectionToSocket,
   broadCastLocationChange,
 } from "../socketFunctions";
-BackgroundFetch.setMinimumIntervalAsync(2);
-const taskName = "test-background-fetch";
+import * as Location from "expo-location";
+import { render } from "react-dom";
+const taskName = "rider-background-location";
 const config = {
   animation: "spring",
   config: {
@@ -59,17 +59,17 @@ const MyTheme = {
 };
 class RootComponent extends Component {
   state = {
-    fontLoaded: false,
+  
   };
   async componentDidMount() {
-    this.loadAssetsAsync();
-    // this.registerTaskAsync();
+    console.log("fdds")
     const { status } = await Location.requestPermissionsAsync();
     if (status === "granted") {
       await Location.startLocationUpdatesAsync(taskName, {
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.Balanced, 
       });
     }
+    // this.registerTaskAsync();
   }
   registerTaskAsync = async () => {
     await BackgroundFetch.registerTaskAsync(taskName);
@@ -109,12 +109,7 @@ class RootComponent extends Component {
       }
     }
   };
-  loadAssetsAsync = async () => {
-    await Font.loadAsync({
-      Roboto_medium: require("../assets/fonts/Roboto-Medium.ttf"),
-    });
-    this.setState({ fontLoaded: true });
-  };
+  
   MainStackScreen() {
     return (
       <MainStack.Navigator
@@ -198,10 +193,8 @@ class RootComponent extends Component {
     );
   }
   render() {
-    console.disableYellowBox = true;
-    if (!this.state.fontLoaded) {
-      return <Text>loading font</Text>;
-    } else {
+   
+   
       return (
         <NavigationContainer>
           <RootStack.Navigator mode="modal">
@@ -213,20 +206,10 @@ class RootComponent extends Component {
           </RootStack.Navigator>
         </NavigationContainer>
       );
-    }
+    
   }
 }
 export default RootComponent;
-const styles = StyleSheet.create({});
 
-TaskManager.defineTask(taskName, ({ data, error }) => {
-  if (error) {
-    // Error occurred - check `error.message` for more details.
-    return;
-  }
-  if (data) {
-    const { locations } = data;
-    console.log(locations);
-    // do something with the locations captured in the background
-  }
-});
+
+const styles = StyleSheet.create({});

@@ -14,13 +14,25 @@ import {
   StatusBar,
   Image,
   Modal,
+  AsyncStorage,
 } from "react-native";
+// import MapViewNavigation, {
+//   NavigationModes,
+//   TravelModeBox,
+//   TravelIcons,
+//   Geocoder,
+//   TravelModes,
+//   DirectionsListView,
+//   ManeuverView,
+//   DurationDistanceView,
+// } from "react-native-maps-navigation";
 import MapView, {
   PROVIDER_GOOGLE,
   Marker,
   AnimatedRegion,
   Polyline,
 } from "react-native-maps";
+import data from "../mapStyle";
 import UserMarker from "./Layouts/UserMarker";
 import Spinner from "react-native-loading-spinner-overlay";
 import haversine from "haversine";
@@ -42,7 +54,7 @@ import { Toast } from "native-base";
 import * as Location from "expo-location";
 import Sidebar from "./Layouts/Sidebar";
 import HeaderHome from "./Layouts/Header";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import RiderDecisionDialogue from "./Layouts/RiderDecisionDialogue";
 
 const TAB_BAR_HEIGHT = 0;
@@ -143,6 +155,7 @@ class MainActivity extends Component {
       showmodal: false,
     });
     console.log(this.state.has_customer);
+
     //  this.listenForCustomerMovement();
   }
   no(userRequest) {
@@ -228,6 +241,10 @@ class MainActivity extends Component {
       </Modal>
     );
   };
+  reCenter() {
+    this.map.animateToRegion(this.getCurrentRegion(), 1000);
+    this.setState({ onRegionChange: false });
+  }
   componentDidMount = async () => {
     await this.props.loginStatus();
     console.log(this.props.authStatus);
@@ -254,11 +271,11 @@ class MainActivity extends Component {
           .start();
       }
       let pos = await Location.getCurrentPositionAsync({});
-      const Oname = await this.getLocationName(data);
+      // const Oname = await this.getLocationName(data);
       const data = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
-        originName: Oname,
+        //originName: Oname,
         speed: pos.coords.speed,
         bearing: pos.coords.heading,
       };
@@ -272,35 +289,38 @@ class MainActivity extends Component {
         riderid: this.props.authStatus.user.id,
       };
       // alert(JSON.stringify(broadcastPayload));
-      if (!this.state.has_customer) {
-        broadCastLocationChange(broadcastPayload);
-        this.ListenForRideRequest();
-      }
+      // if (!this.state.has_customer) {
+      //   broadCastLocationChange(broadcastPayload);
+      //   this.ListenForRideRequest();
+      // }
       Animated.timing(this.animation, {
         toValue: 1,
         duration: 10000,
       }).start();
+      // this.map.animateToViewingAngle(40,1000)
 
       this.watchID = await Location.watchPositionAsync(
         {
           enableHighAccuracy: true,
           distanceInterval: 1,
-          timeInterval: 10000,
+          timeInterval: 1000,
         },
         async (position) => {
-          const { latitude, longitude } = position.coords;
-          const Oname = await this.getLocationName(position);
+          const { latitude, longitude, accuracy } = position.coords;
+          // const Oname = await this.getLocationName(position);
           var newCoordinate = {
             latitude,
             longitude,
-            originName: Oname,
+            accuracy,
+            //originName: Oname,
+            riderid: this.props.authStatus.user.id,
           };
           // setInterval(function() {
           //   console.log("sf");
           // }, 500);
           await this.props.getCurrentLocation(newCoordinate);
           const duration = 1000;
-          this.map.animateToRegion(this.getCurrentRegion(), 1000 * 2);
+          // this.map.animateToRegion(this.getCurrentRegion(), 1000 * 2);
 
           this.state.coordinate
             .timing({
@@ -311,11 +331,12 @@ class MainActivity extends Component {
 
           const newdata = {
             ...newCoordinate,
-            ...data,
+
             riderid: this.props.authStatus.user.id,
           };
+          console.log(newCoordinate);
+          broadCastLocationChange(newCoordinate);
           if (!this.state.has_customer) {
-            broadCastLocationChange(newdata);
             this.ListenForRideRequest();
           }
           //this.state.coordinate.timing(newCoordinate).start();
@@ -381,7 +402,22 @@ class MainActivity extends Component {
                 provider={PROVIDER_GOOGLE}
                 showUserLocation
                 followsUserLocation={false}
-                region={this.getCurrentRegion()}
+                //customMapStyle={data}
+                onRegionChangeComplete={(changed) => {
+                  const currentregion = this.getCurrentRegion();
+
+                  if (
+                    currentregion.latitude.toFixed(3) ==
+                      changed.latitude.toFixed(3) &&
+                    currentregion.longitude.toFixed(3) ==
+                      changed.longitude.toFixed(3)
+                  ) {
+                    this.setState({ onRegionChange: false });
+                  } else {
+                    this.setState({ onRegionChange: true });
+                  }
+                }}
+                initialRegion={this.getCurrentRegion()}
                 //onRegionChange={this.getCurrentRegion()}
                 style={{ ...StyleSheet.absoluteFillObject }}
                 ref={(ref) => {
@@ -442,7 +478,15 @@ class MainActivity extends Component {
 
                 {this.state.has_customer ? (
                   <MapViewDirections
-                    origin={this.props.origin}
+                    mode={"DRIVING"}
+                    strokeColor="#e7564c"
+                    optimizeWaypoints={false}
+                    resetOnChange={false}
+                    origin={{
+                      ...this.props.origin,
+                      LONGITUDE_DELTA: 0.9,
+                      LATITUDE_DELTA: 0.9,
+                    }}
                     destination={{
                       latitude: this.state.customerDetails.latitude,
                       longitude: this.state.customerDetails.longitude,
@@ -452,11 +496,11 @@ class MainActivity extends Component {
                     optimizeWaypoints={true}
                     apikey={GOOGLE_MAPS_APIKEY}
                     onStart={(params) => {
-                      // console.log(
-                      //   `Started routing between "${params.origin}" and "${
-                      //     params.destination
-                      //   }"`,
-                      // );
+                      console.log(
+                        `Started routing between "${params.origin}" and "${
+                          params.destination
+                        }"`
+                      );
                     }}
                     onReady={async (result) => {
                       await this.setState({
@@ -467,14 +511,41 @@ class MainActivity extends Component {
                       // console.log(`Distance: ${result.distance} km`);
                       // console.log(`Duration: ${result.duration} min.`);
 
-                      this.map.fitToCoordinates(result.coordinates, {
-                        edgePadding: {
-                          right: width / 50,
-                          bottom: height / 50,
-                          left: width / 50,
-                          top: height / 50,
+                      // this.map.fitToCoordinates(result.coordinates, {
+                      //   edgePadding: {
+                      //     right: width / 50,
+                      //     bottom: height / 50,
+                      //     left: width / 50,
+                      //     top: height / 50,
+                      //   },
+                      // });
+                      //this.map.animateToViewingAngle(70,1000)
+                      // this.map.animateCamera(
+                      //   {
+                      //     center: this.props.origin
+                            
+                      //     ,
+                      //     pitch: 20,
+                      //     heading: 120,
+                      //     altitude: 200,
+                      //     zoom: 10,
+                      //   },
+                      //   1000
+                      // );
+                      this.mapView.animateCamera(
+                        {
+                          center: {
+                            ...this.props.origin,
+                            LATITUDE_DELTA: 0.9,
+                            LONGITUDE_DELTA: 0.9,
+                          },
+                          pitch: 29,
+                          heading: 50,
+                          altitude: 12,
+                          zoom: 12,
                         },
-                      });
+                        1000,
+                      );
                     }}
                     onError={(errorMessage) => {
                       console.log("GOT AN ERROR");
@@ -483,12 +554,36 @@ class MainActivity extends Component {
                 ) : null}
               </MapView>
             )}
- <Toolbar
-              icon={'menu'}
+            <Toolbar
+              icon={"menu"}
               notbackAction={true}
               opendrawer={this.openDrawer}
               navigation={this.props.navigation}
-            /> 
+            />
+
+            {this.state.onRegionChange ? (
+              <TouchableOpacity
+                onPress={() => {
+                  this.reCenter();
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: 60,
+                  right: 15,
+                  padding: 7,
+                  backgroundColor: "#fff",
+                  borderRadius: 40,
+                  elevation: 84,
+                }}
+              >
+                <FontAwesome5
+                  name="crosshairs"
+                  size={24}
+                  color="#000"
+                  style={{ margin: 2 }}
+                />
+              </TouchableOpacity>
+            ) : null}
             {/* <HeaderHome  
               icon={"menu"}
               route={"ProfileActivity"}
@@ -536,7 +631,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     left: 0,
-  }, 
+  },
   tripDetails: {
     flexDirection: "row",
   },

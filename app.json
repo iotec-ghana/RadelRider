@@ -6,6 +6,7 @@
     "resizeMode": "contain",
     "backgroundColor": "#000000"
   },
+  "orientation": "portrait",
   "expo": {
     "name": "RadelRider",
     "slug": "RadelRider",
@@ -18,7 +19,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "description": "alpha test 1",
+    "description": "alphatest1",
     "ios": {
       "bundleIdentifier": "com.iotecgh.radeldriver"
     },
