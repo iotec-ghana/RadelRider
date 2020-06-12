@@ -16,16 +16,6 @@ import {
   Modal,
   AsyncStorage,
 } from "react-native";
-// import MapViewNavigation, {
-//   NavigationModes,
-//   TravelModeBox,
-//   TravelIcons,
-//   Geocoder,
-//   TravelModes,
-//   DirectionsListView,
-//   ManeuverView,
-//   DurationDistanceView,
-// } from "react-native-maps-navigation";
 import MapView, {
   PROVIDER_GOOGLE,
   Marker,
@@ -50,14 +40,14 @@ import { getCurrentLocation } from "../Actions/locationAction";
 import { isSignedIn, loginStatus } from "../Actions/authAction";
 import { getRiders } from "../Actions/getAllRidersAction";
 import { connect } from "react-redux";
-import { Toast } from "native-base";
+//import { Toast } from "native-base";
 import * as Location from "expo-location";
 import Sidebar from "./Layouts/Sidebar";
 import HeaderHome from "./Layouts/Header";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import RiderDecisionDialogue from "./Layouts/RiderDecisionDialogue";
 
-const TAB_BAR_HEIGHT = 0;
+const TAB_BAR_HEIGHT = 0; 
 const { width, height } = Dimensions.get("window");
 import {
   establishConnectionToSocket,
@@ -65,7 +55,7 @@ import {
   socket,
 } from "../socketFunctions";
 import io from "socket.io-client/dist/socket.io";
-
+import Toast from "../AndroidNativeModules/Toast";
 class MainActivity extends Component {
   constructor(props) {
     super(props);
@@ -129,11 +119,7 @@ class MainActivity extends Component {
       console.log(e.message);
       if (e.message === "Network Error") {
         this.setState({ showBS: false });
-        Toast.show({
-          text: "Please check your internet connection",
-          buttonText: "Okay",
-          duration: 5000,
-        });
+        Toast.show("please check your internet connection", Toast.SHORT);
       }
     }
   }
@@ -175,25 +161,6 @@ class MainActivity extends Component {
       const riderid = this.props.authStatus.user.id;
       socket.on("listening-for-requests-" + riderid, (userRequest) => {
         this.setState({ showmodal: true, reqdetails: userRequest });
-        // alert(userRequest);
-        // Alert.alert(
-        //   "You got a passenger",
-        //   `pickup: ${userRequest.pickup}\nDropoff:${userRequest.destination}`,
-        //   [
-        //     {
-        //       text: "Decline",
-        //       onPress: () => this.no(userRequest),
-        //       style: "cancel",
-        //     },
-        //     {
-        //       text: "Accept",
-        //       onPress: () => this.yes(userRequest),
-        //       // tracking()t
-        //     },
-        //   ],
-        //   { cancelable: false }
-        // );
-        // return <RiderDecisionDialogue/>
       });
     }
   };
@@ -254,6 +221,7 @@ class MainActivity extends Component {
     establishConnectionToSocket({ riderid: this.props.authStatus.user.id });
     // const check = await Location.requestPermissionsAsync()
     // console.log(check)
+    
     try {
       let { status } = await Location.requestPermissionsAsync();
       if (status !== "granted") {
@@ -379,6 +347,11 @@ class MainActivity extends Component {
     }
     return (
       <View style={{ flex: 1 }}>
+        <StatusBar
+          barStyle="dark-content"
+          translucent={true}
+          backgroundColor={'transparent'} 
+        />
         <Drawer
           ref={(ref) => {
             this.drawer = ref;
@@ -523,7 +496,7 @@ class MainActivity extends Component {
                       // this.map.animateCamera(
                       //   {
                       //     center: this.props.origin
-                            
+
                       //     ,
                       //     pitch: 20,
                       //     heading: 120,
@@ -544,7 +517,7 @@ class MainActivity extends Component {
                           altitude: 12,
                           zoom: 12,
                         },
-                        1000,
+                        1000
                       );
                     }}
                     onError={(errorMessage) => {
@@ -554,12 +527,12 @@ class MainActivity extends Component {
                 ) : null}
               </MapView>
             )}
-            <Toolbar
+            {/* <Toolbar
               icon={"menu"}
               notbackAction={true}
               opendrawer={this.openDrawer}
               navigation={this.props.navigation}
-            />
+            /> */}
 
             {this.state.onRegionChange ? (
               <TouchableOpacity
@@ -568,7 +541,7 @@ class MainActivity extends Component {
                 }}
                 style={{
                   position: "absolute",
-                  bottom: 60,
+                  bottom: height/20,
                   right: 15,
                   padding: 7,
                   backgroundColor: "#fff",
@@ -584,13 +557,13 @@ class MainActivity extends Component {
                 />
               </TouchableOpacity>
             ) : null}
-            {/* <HeaderHome  
+            <HeaderHome  
               icon={"menu"}
               route={"ProfileActivity"}
               online={true}
               icon={"search"}
               navigation={this.props.navigation}
-            /> */}
+            />
           </View>
         </Drawer>
         {this.state.showmodal ? this.modal() : null}

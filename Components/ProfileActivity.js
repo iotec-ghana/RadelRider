@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
+
 import Toolbar from "./Layouts/Toolbar";
 const { width, height } = Dimensions.get("window");
 import { isSignedIn } from "../Actions/authAction";
@@ -19,7 +20,9 @@ import { Feather } from "@expo/vector-icons";
 class ProfileActivity extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      value: false,
+    };
   }
 
   ongoing() {
@@ -252,7 +255,7 @@ class ProfileActivity extends Component {
                 style={styles.image}
                 source={require("../assets/userlogo.png")}
               />
-              <View>
+              <View style={{ flex: 1, alignItems: "flex-start" }}>
                 <Text
                   style={{
                     color: "#fff",
@@ -292,6 +295,8 @@ class ProfileActivity extends Component {
                     </Text>
                   </TouchableOpacity>
                 ) : null}
+
+               
               </View>
               <View
                 style={{

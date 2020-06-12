@@ -17,8 +17,11 @@ export default class App extends Component {
   }
   async componentDidMount() {
     await this.loadAssetsAsync();
+    //.backgroundLocation() 
    
   }
+
+
   loadAssetsAsync = async () => {
     await Font.loadAsync({
       Roboto_medium: require("./assets/fonts/Roboto-Medium.ttf"),

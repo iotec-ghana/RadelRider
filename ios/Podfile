@@ -44,4 +44,6 @@ target 'RadelRider' do
   # react-native-cli autolinking
   use_native_modules!
 
+  pod '@mauron85_react-native-background-geolocation', :path => '../node_modules/@mauron85/react-native-background-geolocation'
+
 end
