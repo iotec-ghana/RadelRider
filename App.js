@@ -4,7 +4,6 @@ import RootComponent from "./Components/RootComponent";
 import { Provider } from "react-redux";
 import store from "./store";
 import { Root } from "native-base";
-
 import * as Font from "expo-font";
 //BackgroundFetch.setMinimumIntervalAsync(2);
 
@@ -17,7 +16,7 @@ export default class App extends Component {
   }
   async componentDidMount() {
     await this.loadAssetsAsync();
-    //.backgroundLocation() 
+    //this.backgroundLocation() 
    
   }
 

@@ -46,4 +46,6 @@ target 'RadelRider' do
 
   pod '@mauron85_react-native-background-geolocation', :path => '../node_modules/@mauron85/react-native-background-geolocation'
 
+  pod 'RNExitApp', :path => '../node_modules/react-native-exit-app'
+
 end

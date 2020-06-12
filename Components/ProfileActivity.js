@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
-
+import { Switch } from "react-native-switch";
 import Toolbar from "./Layouts/Toolbar";
 const { width, height } = Dimensions.get("window");
 import { isSignedIn } from "../Actions/authAction";
@@ -31,7 +31,7 @@ class ProfileActivity extends Component {
         style={{
           marginTop: 60,
           padding: 15,
-          elevation: 24,
+          elevation: 0,
           backgroundColor: "#fafafa",
           borderRadius: 10,
           marginRight: 10,
@@ -113,7 +113,7 @@ class ProfileActivity extends Component {
       <View
         style={{
           padding: 20,
-          elevation: 24,
+          elevation: 0,
           backgroundColor: "#fafafa",
           position: "absolute",
           bottom: -60,
@@ -221,21 +221,20 @@ class ProfileActivity extends Component {
     console.log(this.props.authStatus.isVerified);
     const isVerified = JSON.stringify(this.props.authStatus.isVerified);
     return (
-      <SafeAreaView>
-        <ScrollView>
-          <View style={styles.container}>
-            <Toolbar
-              icon={"chevron-left"}
-              notbackAction={true}
-              opendrawer={this.openDrawer}
-              navigation={this.props.navigation}
-              titleColor={"#fff"}
-              body={"Profile"}
-              bg={"#3d6dfe"}
-              iconColor={"#fff"}
-            />
-            <StatusBar barStyle="light-content" backgroundColor={"#3d6dfe"} />
-
+      <View style={styles.container}>
+        <Toolbar
+          icon={"chevron-left"}
+          notbackAction={true}
+          opendrawer={this.openDrawer}
+          navigation={this.props.navigation}
+          titleColor={"#fff"}
+          body={"Profile"}
+          bg={"#3d6dfe"}
+          iconColor={"#fff"}
+        />
+        <StatusBar barStyle="light-content" backgroundColor={"#3d6dfe"} />
+        <SafeAreaView >
+          <ScrollView >
             <View
               style={{
                 flexDirection: "row",
@@ -255,7 +254,7 @@ class ProfileActivity extends Component {
                 style={styles.image}
                 source={require("../assets/userlogo.png")}
               />
-              <View style={{ flex: 1, alignItems: "flex-start" }}>
+              <View style={{ flex: 1, alignItems: "flex-start", }}>
                 <Text
                   style={{
                     color: "#fff",
@@ -295,8 +294,6 @@ class ProfileActivity extends Component {
                     </Text>
                   </TouchableOpacity>
                 ) : null}
-
-               
               </View>
               <View
                 style={{
@@ -314,19 +311,19 @@ class ProfileActivity extends Component {
             </View>
 
             {this.ongoing()}
-            <Text
-              style={{
-                textAlign: "center",
-                margin: 20,
-                fontSize: 22,
-                fontWeight: "bold",
-              }}
-            >
-              No notifications
-            </Text>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+        <Text
+          style={{
+            textAlign: "center",
+            margin: 20,
+            fontSize: 22,
+            fontWeight: "bold",
+          }}
+        >
+          No notifications
+        </Text>
+      </View>
     );
   }
 }
@@ -341,7 +338,7 @@ export default connect(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#00000000",
+    backgroundColor: "#fff",
     height: height,
   },
   image: {

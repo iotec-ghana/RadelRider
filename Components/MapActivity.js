@@ -543,13 +543,13 @@ class MainActivity extends Component {
                   position: "absolute",
                   bottom: height/20,
                   right: 15,
-                  padding: 7,
+                  padding: 10,
                   backgroundColor: "#fff",
                   borderRadius: 40,
                   elevation: 84,
                 }}
               >
-                <FontAwesome5
+                <FontAwesome5 
                   name="crosshairs"
                   size={24}
                   color="#000"
