@@ -6,7 +6,6 @@ const initialState = {
 };
 
 export default function(state = initialState, action) {
-    console.log(action.payload,"gtom reducer")
   switch (action.type) {
     case COME_ONLINE:
        

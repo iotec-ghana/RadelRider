@@ -3,18 +3,15 @@ import axios from "axios";
 import {
   View,
   Text,
-  BackHandler,
   StyleSheet,
   Dimensions,
-  PermissionsAndroid,
   TouchableOpacity,
   Platform,
-  Alert,
   Animated,
   StatusBar,
   Image,
   Modal,
-  AsyncStorage,
+  Vibration,
 } from "react-native";
 import MapView, {
   PROVIDER_GOOGLE,
@@ -22,7 +19,6 @@ import MapView, {
   AnimatedRegion,
   Polyline,
 } from "react-native-maps";
-import data from "../mapStyle";
 import UserMarker from "./Layouts/UserMarker";
 import Spinner from "react-native-loading-spinner-overlay";
 import haversine from "haversine";
@@ -46,15 +42,15 @@ import Sidebar from "./Layouts/Sidebar";
 import HeaderHome from "./Layouts/Header";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { GetOnlineStatus } from "../Actions/OnlineStatusAction";
-
-const TAB_BAR_HEIGHT = 0;
 const { width, height } = Dimensions.get("window");
 import {
   establishConnectionToSocket,
   broadCastLocationChange,
   socket,
 } from "../socketFunctions";
-import io from "socket.io-client/dist/socket.io";
+import { Notifications } from "expo";
+import * as Permissions from "expo-permissions";
+import Constants from "expo-constants";
 
 class MainActivity extends Component {
   constructor(props) {
@@ -89,12 +85,44 @@ class MainActivity extends Component {
         latitudeDelta: 0,
         longitudeDelta: 0,
       }),
+      expoPushToken: "",
+      notification: {},
     };
     this.animation = new Animated.Value(0);
   }
+  registerForPushNotificationsAsync = async () => {
+    if (Constants.isDevice) {
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Permissions.askAsync(
+          Permissions.NOTIFICATIONS
+        );
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      token = await Notifications.getExpoPushTokenAsync();
+      console.log(token);
+      this.setState({ expoPushToken: token });
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
 
+    if (Platform.OS === "android") {
+      Notifications.createChannelAndroidAsync("default", {
+        name: "default",
+        sound: true,
+        priority: "max",
+        vibrate: [0, 250, 250, 250],
+      });
+    }
+  };
   listenForCustomerMovement() {
-    // console.log("dsfsdf" + this.state.customerDetails);
     socket.on(
       "customer-movement-" + this.state.customerDetails.userid,
       (movement) => {
@@ -104,7 +132,6 @@ class MainActivity extends Component {
   }
   makeDecision(decisionObj) {
     socket.emit("request-decision", decisionObj);
-    //console.log("Responded");
   }
 
   async getLocationName(position) {
@@ -186,13 +213,13 @@ class MainActivity extends Component {
             />
             <View style={styles.metadata}>
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                Deedat Idriss
+              {this.state.reqdetails.name}
               </Text>
               <Text style={{ fontSize: 12, fontWeight: "bold" }}>
-                Pickup : Kasoa
+                Pickup : {this.state.reqdetails.pickup}
               </Text>
               <Text style={{ fontSize: 12, fontWeight: "bold" }}>
-                Drop Off : Kaneshi
+                Drop Off : {this.state.reqdetails.destination}
               </Text>
             </View>
           </View>
@@ -216,13 +243,22 @@ class MainActivity extends Component {
     this.map.animateToRegion(this.getCurrentRegion(), 1000);
     this.setState({ onRegionChange: false });
   }
+  _handleNotification = (notification) => {
+    Vibration.vibrate();
+    console.log(notification);
+    this.setState({ notification: notification });
+  };
+
   componentDidMount = async () => {
     await this.props.loginStatus();
     await this.props.GetOnlineStatus();
     if (!this.props.authStatus.isAuthenticated) {
       this.props.navigation.dispatch(StackActions.replace("Intro"));
     }
-
+   await  this.registerForPushNotificationsAsync();
+    this._notificationSubscription = Notifications.addListener(
+      this._handleNotification
+    );
     try {
       let { status } = await Location.requestPermissionsAsync();
       if (status !== "granted") {
@@ -262,9 +298,10 @@ class MainActivity extends Component {
             latitude,
             longitude,
             accuracy,
-            //originName: Oname,
             riderid: this.props.authStatus.user.id,
+            NotificationToken: this.state.expoPushToken,
           };
+          console.log(newCoordinate)
 
           await this.props.getCurrentLocation(newCoordinate);
           const duration = 1000;
