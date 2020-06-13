@@ -62,14 +62,9 @@ class RootComponent extends Component {
   
   };
   async componentDidMount() {
-    console.log("fdds")
-    const { status } = await Location.requestPermissionsAsync();
-    if (status === "granted") {
-      await Location.startLocationUpdatesAsync(taskName, {
-        accuracy: Location.Accuracy.Balanced, 
-      });
-    }
-    // this.registerTaskAsync();
+  
+    
+  
   }
   registerTaskAsync = async () => {
     await BackgroundFetch.registerTaskAsync(taskName);

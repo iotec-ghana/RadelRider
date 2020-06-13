@@ -40,14 +40,14 @@ import { getCurrentLocation } from "../Actions/locationAction";
 import { isSignedIn, loginStatus } from "../Actions/authAction";
 import { getRiders } from "../Actions/getAllRidersAction";
 import { connect } from "react-redux";
-//import { Toast } from "native-base";
+import { Toast } from "native-base";
 import * as Location from "expo-location";
 import Sidebar from "./Layouts/Sidebar";
 import HeaderHome from "./Layouts/Header";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
-import RiderDecisionDialogue from "./Layouts/RiderDecisionDialogue";
+import { GetOnlineStatus } from "../Actions/OnlineStatusAction";
 
-const TAB_BAR_HEIGHT = 0; 
+const TAB_BAR_HEIGHT = 0;
 const { width, height } = Dimensions.get("window");
 import {
   establishConnectionToSocket,
@@ -55,7 +55,7 @@ import {
   socket,
 } from "../socketFunctions";
 import io from "socket.io-client/dist/socket.io";
-import Toast from "../AndroidNativeModules/Toast";
+
 class MainActivity extends Component {
   constructor(props) {
     super(props);
@@ -90,10 +90,11 @@ class MainActivity extends Component {
         longitudeDelta: 0,
       }),
     };
+    this.animation = new Animated.Value(0);
   }
 
   listenForCustomerMovement() {
-    console.log("dsfsdf" + this.state.customerDetails);
+    // console.log("dsfsdf" + this.state.customerDetails);
     socket.on(
       "customer-movement-" + this.state.customerDetails.userid,
       (movement) => {
@@ -103,11 +104,9 @@ class MainActivity extends Component {
   }
   makeDecision(decisionObj) {
     socket.emit("request-decision", decisionObj);
-    console.log("Responded");
+    //console.log("Responded");
   }
-  componentWillMount() {
-    this.animation = new Animated.Value(0);
-  }
+
   async getLocationName(position) {
     try {
       const { latitude, longitude } = position.coords;
@@ -116,10 +115,15 @@ class MainActivity extends Component {
       const res = await axios.get(url);
       return res.data.results[2].formatted_address;
     } catch (e) {
-      console.log(e.message);
+      //consoleconsole.log(e.message);
       if (e.message === "Network Error") {
         this.setState({ showBS: false });
-        Toast.show("please check your internet connection", Toast.SHORT);
+        Toast.show({
+          text: "No internet. Connect to wi-fi or cellular network",
+          buttonText: "Okay",
+          duration: 3000,
+          type: "danger",
+        });
       }
     }
   }
@@ -140,7 +144,7 @@ class MainActivity extends Component {
       //reqdetails: null,
       showmodal: false,
     });
-    console.log(this.state.has_customer);
+    // console.log(this.state.has_customer);
 
     //  this.listenForCustomerMovement();
   }
@@ -214,14 +218,11 @@ class MainActivity extends Component {
   }
   componentDidMount = async () => {
     await this.props.loginStatus();
-    console.log(this.props.authStatus);
+    await this.props.GetOnlineStatus();
     if (!this.props.authStatus.isAuthenticated) {
       this.props.navigation.dispatch(StackActions.replace("Intro"));
     }
-    establishConnectionToSocket({ riderid: this.props.authStatus.user.id });
-    // const check = await Location.requestPermissionsAsync()
-    // console.log(check)
-    
+
     try {
       let { status } = await Location.requestPermissionsAsync();
       if (status !== "granted") {
@@ -243,30 +244,11 @@ class MainActivity extends Component {
       const data = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
-        //originName: Oname,
         speed: pos.coords.speed,
         bearing: pos.coords.heading,
       };
-
-      console.log(data);
-
       await this.props.getCurrentLocation(data);
       this.setState({ bearing: pos.coords.heading, loading: false });
-      const broadcastPayload = {
-        ...data,
-        riderid: this.props.authStatus.user.id,
-      };
-      // alert(JSON.stringify(broadcastPayload));
-      // if (!this.state.has_customer) {
-      //   broadCastLocationChange(broadcastPayload);
-      //   this.ListenForRideRequest();
-      // }
-      Animated.timing(this.animation, {
-        toValue: 1,
-        duration: 10000,
-      }).start();
-      // this.map.animateToViewingAngle(40,1000)
-
       this.watchID = await Location.watchPositionAsync(
         {
           enableHighAccuracy: true,
@@ -283,12 +265,9 @@ class MainActivity extends Component {
             //originName: Oname,
             riderid: this.props.authStatus.user.id,
           };
-          // setInterval(function() {
-          //   console.log("sf");
-          // }, 500);
+
           await this.props.getCurrentLocation(newCoordinate);
           const duration = 1000;
-          // this.map.animateToRegion(this.getCurrentRegion(), 1000 * 2);
 
           this.state.coordinate
             .timing({
@@ -296,15 +275,13 @@ class MainActivity extends Component {
               duration,
             })
             .start();
-
-          const newdata = {
-            ...newCoordinate,
-
-            riderid: this.props.authStatus.user.id,
-          };
-          console.log(newCoordinate);
-          broadCastLocationChange(newCoordinate);
-          if (!this.state.has_customer) {
+          console.log(this.state.has_customer, this.props.onlineStatus);
+          if (!this.state.has_customer && this.props.onlineStatus) {
+            establishConnectionToSocket({
+              riderid: this.props.authStatus.user.id,
+            });
+            broadCastLocationChange(newCoordinate);
+            console.log("sending");
             this.ListenForRideRequest();
           }
           //this.state.coordinate.timing(newCoordinate).start();
@@ -350,7 +327,7 @@ class MainActivity extends Component {
         <StatusBar
           barStyle="dark-content"
           translucent={true}
-          backgroundColor={'transparent'} 
+          backgroundColor={"transparent"}
         />
         <Drawer
           ref={(ref) => {
@@ -541,7 +518,7 @@ class MainActivity extends Component {
                 }}
                 style={{
                   position: "absolute",
-                  bottom: height/20,
+                  bottom: height / 20,
                   right: 15,
                   padding: 10,
                   backgroundColor: "#fff",
@@ -549,7 +526,7 @@ class MainActivity extends Component {
                   elevation: 84,
                 }}
               >
-                <FontAwesome5 
+                <FontAwesome5
                   name="crosshairs"
                   size={24}
                   color="#000"
@@ -557,7 +534,7 @@ class MainActivity extends Component {
                 />
               </TouchableOpacity>
             ) : null}
-            <HeaderHome  
+            <HeaderHome
               icon={"menu"}
               route={"ProfileActivity"}
               online={true}
@@ -575,10 +552,11 @@ const mapStateToProps = (state) => ({
   origin: state.locationData.OriginCoordinates,
   error: state.locationData.error,
   authStatus: state.auth,
+  onlineStatus: state.OnlineStatus.online,
 });
 export default connect(
   mapStateToProps,
-  { getCurrentLocation, getRiders, isSignedIn, loginStatus }
+  { getCurrentLocation, getRiders, isSignedIn, loginStatus, GetOnlineStatus }
 )(MainActivity);
 const styles = StyleSheet.create({
   container: {

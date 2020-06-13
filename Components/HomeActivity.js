@@ -6,7 +6,7 @@ import MapActivity from "./MapActivity";
 import MyEarningsActivity from "./MyEarningsActivity";
 import SettingsActivity from "./SettingsActivity";
 import Toolbar from "./Layouts/Toolbar";
-import ProfileActivity from './ProfileActivity';
+import ProfileActivity from "./ProfileActivity";
 const Tab = createMaterialBottomTabNavigator();
 export default class HomeActivity extends Component {
   constructor(props) {
@@ -27,8 +27,7 @@ export default class HomeActivity extends Component {
               iconName = focused ? "trending-up" : "trending-up";
             } else if (route.name === "Settings") {
               iconName = focused ? "settings" : "settings";
-            }
-            else if (route.name === "Profile") {
+            } else if (route.name === "Profile") {
               iconName = focused ? "user" : "user";
             }
 
@@ -39,12 +38,11 @@ export default class HomeActivity extends Component {
         labeled={false}
         activeColor="#3d6dfe"
         inactiveColor="gray"
-        barStyle={{ backgroundColor: "#fff"}}
+        barStyle={{ backgroundColor: "#fff" }}
       >
         <Tab.Screen name="Home" component={MapActivity} />
         <Tab.Screen name="Earnings" component={MyEarningsActivity} />
         <Tab.Screen name="Settings" component={SettingsActivity} />
-        <Tab.Screen name="Profile" component={ProfileActivity} />
       </Tab.Navigator>
     );
   }

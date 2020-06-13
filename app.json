@@ -17,7 +17,7 @@
       "web"
     ],
     "assetBundlePatterns": [
-      "**/*"
+      "assets/*"
     ],
     "description": "alphatest1",
     "ios": {

@@ -105,14 +105,7 @@ class MapsActivity extends Component {
   openDrawer = () => {
     this.drawer._root.open();
   };
-  componentWillUnmount() {
-    //this._unsubscribe();
-    //Location.clearWatch(this.watchID);
-    // console.log("unmounted");
-  }
-  componentWillMount() {
-    this.animatedValue = new Animated.Value(50);
-  }
+ 
   getAllRiders = () => {
     const userData = {
       userid: 4,     

@@ -1,6 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { Component } from "react";
-import { Header, Left, Body, Right, Button, Title } from "native-base";
+import { Header, Left, Body, Right, Button, Toast } from "native-base";
+import {
+  broadCastLocationChange,
+  establishConnectionToSocket,
+} from "../../socketFunctions";
+const taskName = "rider-background-location";
+import * as Location from "expo-location";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -10,199 +16,72 @@ import {
   Dimensions,
   AsyncStorage,
 } from "react-native";
-import RNExitApp from 'react-native-exit-app';
-import Icon from "react-native-vector-icons/Feather";
+import {
+  Online,
+  Offline,
+  GetOnlineStatus,
+} from "../../Actions/OnlineStatusAction";
+import { connect } from "react-redux";
+import * as TaskManager from "expo-task-manager";
 import { Feather } from "@expo/vector-icons";
 const { width, height } = Dimensions.get("window");
-import BackgroundGeolocation from "@mauron85/react-native-background-geolocation";
 import { Switch } from "react-native-switch";
-export default class HeaderHome extends Component {
+class HeaderHome extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: false,
-      online: false,
+      online: props.onlineStatus,
     };
   }
-  async ToggleStatus(v) {
-    console.log(v);
-    const { online, value } = this.state;
-    if (v == true) {
-      await AsyncStorage.setItem(
-        "onlineStatus",
-        JSON.stringify({ online: true })
-      );
-      this.setState({ online: true, value: true });
+  async ToggleStatus(online) {
+    this.setState({ online: online });
+    console.log(online);
+    if (online) {
+      await this.props.Online(online);
+      console.log("done")
     } else {
-      await AsyncStorage.setItem(
-        "onlineStatus",
-        JSON.stringify({ online: false })
-      );
-      this.setState({ online: false, value: false });
+      await this.props.Offline(online);
     }
-    console.log(await AsyncStorage.getItem("onlineStatus"));
   }
-  async PersistOnlineStatus() {
-    try {
-      const check = await AsyncStorage.getItem("onlineStatus");
 
-      if (check == null) {
-        await AsyncStorage.setItem(
-          "onlineStatus",
-          JSON.stringify({ online: false })
-        );
-        this.setState({ online: false });
-      } else {
-        const read = await AsyncStorage.getItem("onlineStatus");
-        const status = JSON.parse(read);
-        this.setState({ online: status.online, value: status.online });
-      }
-    } catch (error) {}
-  }
-  // componentDidUpdate(){
-  //   this.backgroundLocation();
-  // }
-  
   async componentDidMount() {
-    await this.PersistOnlineStatus();
-    console.log(this.state.online, "checked");
-    //if (this.state.value == true) {
-      this.backgroundLocation();
-   // }
-  } 
-  backgroundLocation() {
-    const { online, value } = this.state;
-    BackgroundGeolocation.configure({
-      desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
-      stationaryRadius: 50,
-      distanceFilter: 50,
-      notificationTitle: "Background tracking",    
-      notificationText: "enabled",
-      debug: true, 
-      startOnBoot: true,
-      stopOnTerminate: true,
-      locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
-      interval: 10000,
-      fastestInterval: 5000,
-      activitiesInterval: 10000,
-      stopOnStillActivity: true,
-      url: "http://192.168.81.15:3000/location",
-      httpHeaders: {
-        "X-FOO": "bar",
-      },
-      // customize post properties
-      // postTemplate: {
-      //   lat: '@latitude',
-      //   lon: '@longitude',
-      //   foo: 'bar' // you can also add your own properties
-      // }
-    });
-
-    BackgroundGeolocation.on("location", (location) => {
-      // handle your locations here
-      // to perform long running operation on iOS
-      // you need to create background task
-      console.log(location, "this");
-      BackgroundGeolocation.startTask((taskKey) => {
-       
-        // execute long running task
-
-        // eg. ajax post location
-        // IMPORTANT: task has to be ended by endTask
-        BackgroundGeolocation.endTask(taskKey);
-      });
-    });
-
-    // BackgroundGeolocation.on("stationary", (stationaryLocation) => {
-    //   // handle stationary locations here
-    //   Actions.sendLocation(stationaryLocation);
-    // });
-
-    BackgroundGeolocation.on("error", (error) => {
-      console.log("[ERROR] BackgroundGeolocation error:", error);
-    });
-
-    BackgroundGeolocation.on("start", () => {
-      console.log("[INFO] BackgroundGeolocation service has been started");
-    });
-
-    BackgroundGeolocation.on("stop", () => {
-      console.log("[INFO] BackgroundGeolocation service has been stopped");
-    });
-  
-    BackgroundGeolocation.on("authorization", (status) => {
-      console.log(
-        "[INFO] BackgroundGeolocation authorization status: " + status
-      );
-      if (status !== BackgroundGeolocation.AUTHORIZED) {
-        // we need to set delay or otherwise alert may not be shown
-        setTimeout(
-          () =>
-            Alert.alert(
-              "App requires location tracking permission",
-              "Would you like to open app settings?",
-              [
-                {
-                  text: "Yes",
-                  onPress: () => BackgroundGeolocation.showAppSettings(),
-                },
-                {
-                  text: "No",
-                  onPress: () => console.log("No Pressed"),
-                  style: "cancel",
-                },
-              ]
-            ),
-          1000
-        );
+    
+   await this.props.GetOnlineStatus();
+   this.setState({online:this.props.onlineStatus,})
+    console.log(this.props.onlineStatus, "from local storage");
+    if (this.state.online) {
+      if (status === "granted") { 
+        await Location.startLocationUpdatesAsync(taskName, {
+          accuracy: Location.Accuracy.Balanced,
+        });
       }
-    });
+    } else {
+      try {
+        // if (Location.hasStartedLocationUpdatesAsync(taskName)) {
+        //   console.log(" locationasync is  active");
+        //   await Location.stopLocationUpdatesAsync(taskName);
+        //   console.log(" topLocationUpdatesAsync has been stopped");
+        // } else {
+        //   console.log(" location async is not active");
+        // }
 
-    BackgroundGeolocation.on("background", () => {
-      console.log("[INFO] App is in background");
-      if(!online){
-          BackgroundGeolocation.stop()
-          RNExitApp.exitApp();
-        }
-    }); 
- 
-    BackgroundGeolocation.on("foreground", () => {
-      console.log("[INFO] App is in foreground");
-    });
-
-    BackgroundGeolocation.on("abort_requested", () => {
-      console.log("[INFO] Server responded with 285 Updates Not Required");
-
-      // Here we can decide whether we want stop the updates or not.
-      // If you've configured the server to return 285, then it means the server does not require further update.
-      // So the normal thing to do here would be to `BackgroundGeolocation.stop()`.
-      // But you might be counting on it to receive location updates in the UI, so you could just reconfigure and set `url` to null.
-    });
-
-    BackgroundGeolocation.on("http_authorization", () => {
-      console.log("[INFO] App needs to authorize the http requests");
-    });
-
-    BackgroundGeolocation.checkStatus((status) => {
-      console.log(
-        "[INFO] BackgroundGeolocation service is running",
-        status.isRunning
-      );
-      console.log(
-        "[INFO] BackgroundGeolocation services enabled",
-        status.locationServicesEnabled
-      );
-      console.log(
-        "[INFO] BackgroundGeolocation auth status: " + status.authorization
-      );
- 
-      // you don't need to check status before start (this is just the example)
-      if (online) {
-        BackgroundGeolocation.start(); //triggers start on start event
-      } 
-      // 
-    });    
+        // if (TaskManager.isTaskRegisteredAsync(taskName)) {
+        //   console.log("isTaskRegisteredAsync is active");
+        //   await TaskManager.unregisterTaskAsync(taskName);
+        //   console.log("unregisterAllTasksAsync has executed");
+        // } else {
+        //   console.log("isTaskRegisteredAsync not active");
+        // }
+        const resp = await TaskManager.unregisterTaskAsync(taskName);
+        console.log(resp);
+      } catch (e) {
+        console.log(e.message);
+      }
+      //await TaskManager.unregisterAllTasksAsync();
+      //console.log("is off on first load");
+    }
   }
+
   render() {
     return (
       <View style={styles.header}>
@@ -216,7 +95,7 @@ export default class HeaderHome extends Component {
             >
               {/* <Feather
                 name={this.props.icon}
-                size={30}
+                size={30} 
                 color="#000"
                 style={{margin: 0}}
               /> */}
@@ -290,6 +169,14 @@ export default class HeaderHome extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  onlineStatus: state.OnlineStatus.online,
+});
+export default connect(
+  mapStateToProps,
+  { Online, Offline, GetOnlineStatus }
+)(HeaderHome);
 const styles = StyleSheet.create({
   header: {
     elevation: 12,
@@ -304,4 +191,36 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 100,
   },
+});
+TaskManager.defineTask(taskName, async ({ data, error }) => {
+  if (error) {
+    // Error occurred - check `error.message` for more details.
+    console.log(error);
+    return;
+  }
+  if (data) {
+    // const user = await AsyncStorage.getItem('authdata');
+    // const data = JSON.parse(user);
+    const { locations } = data;
+     console.log(locations[0].coords, "bg");
+    const read = await AsyncStorage.getItem("onlineStatus");
+    const status = JSON.parse(read);
+    const readAuthdata = await AsyncStorage.getItem("authdata");
+    const authdata = JSON.parse(readAuthdata);
+    const riderid = authdata.user.id;
+    // console.log(riderid);
+    if (status.online) {
+      console.log("broadcasting data");
+      establishConnectionToSocket({ riderid: riderid });
+      broadCastLocationChange({ ...locations[0].coords, riderid: riderid });
+      // Toast.show({
+      //   text: JSON.stringify(locations),
+      //   buttonText: "Okay",
+      //   duration: 3000,
+      //   type: "warning",
+      // });
+    }
+
+    //getCurrentLocation(locations[0].coords)
+  }
 });
