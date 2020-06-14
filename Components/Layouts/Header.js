@@ -4,6 +4,7 @@ import { Header, Left, Body, Right, Button, Toast } from "native-base";
 import {
   broadCastLocationChange,
   establishConnectionToSocket,
+  disconnect,
 } from "../../socketFunctions";
 const taskName = "rider-background-location";
 import * as Location from "expo-location";
@@ -38,19 +39,18 @@ class HeaderHome extends Component {
     console.log(online);
     if (online) {
       await this.props.Online(online);
-      console.log("done")
+      console.log("done");
     } else {
       await this.props.Offline(online);
     }
   }
 
   async componentDidMount() {
-    
-   await this.props.GetOnlineStatus();
-   this.setState({online:this.props.onlineStatus,})
+    await this.props.GetOnlineStatus();
+    this.setState({ online: this.props.onlineStatus });
     console.log(this.props.onlineStatus, "from local storage");
     if (this.state.online) {
-      if (status === "granted") { 
+      if (status === "granted") {
         await Location.startLocationUpdatesAsync(taskName, {
           accuracy: Location.Accuracy.Balanced,
         });
@@ -202,7 +202,7 @@ TaskManager.defineTask(taskName, async ({ data, error }) => {
     // const user = await AsyncStorage.getItem('authdata');
     // const data = JSON.parse(user);
     const { locations } = data;
-     console.log(locations[0].coords, "bg");
+    console.log(locations[0].coords, "bg");
     const read = await AsyncStorage.getItem("onlineStatus");
     const status = JSON.parse(read);
     const readAuthdata = await AsyncStorage.getItem("authdata");
@@ -219,6 +219,8 @@ TaskManager.defineTask(taskName, async ({ data, error }) => {
       //   duration: 3000,
       //   type: "warning",
       // });
+    } else {
+      disconnect({});
     }
 
     //getCurrentLocation(locations[0].coords)

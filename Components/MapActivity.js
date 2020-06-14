@@ -47,6 +47,7 @@ import {
   establishConnectionToSocket,
   broadCastLocationChange,
   socket,
+  disconnect
 } from "../socketFunctions";
 import { Notifications } from "expo";
 import * as Permissions from "expo-permissions";
@@ -320,6 +321,9 @@ class MainActivity extends Component {
             broadCastLocationChange(newCoordinate);
             console.log("sending");
             this.ListenForRideRequest();
+          }
+          {
+            disconnect({});
           }
           //this.state.coordinate.timing(newCoordinate).start();
 
