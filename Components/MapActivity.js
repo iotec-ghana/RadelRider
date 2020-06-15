@@ -252,7 +252,6 @@ class MainActivity extends Component {
 
   componentDidMount = async () => {
     await this.props.loginStatus();
-    await this.props.GetOnlineStatus();
     if (!this.props.authStatus.isAuthenticated) {
       this.props.navigation.dispatch(StackActions.replace("Intro"));
     }
@@ -324,6 +323,7 @@ class MainActivity extends Component {
           }
           {
             disconnect({});
+            
           }
           //this.state.coordinate.timing(newCoordinate).start();
 

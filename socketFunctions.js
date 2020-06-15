@@ -27,7 +27,7 @@ export function broadCastLocationChange(riderData) {
 }
 
 export function disconnect(data) {
-  socket.emit("disconnect", data);
+  socket.disconnect()
   // socket.emit("disconnect",data)
 }
 
