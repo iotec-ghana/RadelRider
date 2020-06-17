@@ -11,21 +11,14 @@
     "name": "RadelRider",
     "slug": "RadelRider",
     "version": "1.0.0",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
-    "assetBundlePatterns": [
-      "assets/*"
-    ],
+    "platforms": ["ios", "android", "web"],
+    "assetBundlePatterns": ["assets/*"],
     "description": "alphatest1",
     "ios": {
       "bundleIdentifier": "com.iotecgh.radeldriver"
     },
     "android": {
-      "package": "com.iotecgh.radeldriver",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.iotecgh.radeldriver"
     },
     "entryPoint": "node_modules/expo/AppEntry.js"
   }

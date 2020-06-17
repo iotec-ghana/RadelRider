@@ -382,13 +382,7 @@ class MainActivity extends Component {
           }
         >
           <View style={styles.container}>
-            {this.state.loading ? (
-              <Spinner
-                visible={true}
-                textContent={"Loading..."}
-                textStyle={styles.spinnerTextStyle}
-              />
-            ) : (
+            
               <MapView
                 provider={PROVIDER_GOOGLE}
                 showUserLocation
@@ -544,7 +538,7 @@ class MainActivity extends Component {
                   />
                 ) : null}
               </MapView>
-            )}
+            
             {/* <Toolbar
               icon={"menu"}
               notbackAction={true}
