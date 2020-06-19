@@ -13,12 +13,7 @@ import {
   Modal,
   Vibration,
 } from "react-native";
-import MapView, {
-  PROVIDER_GOOGLE,
-  Marker,
-  AnimatedRegion,
-  Polyline,
-} from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker, AnimatedRegion, Polyline } from "react-native-maps";
 import UserMarker from "./Layouts/UserMarker";
 import Spinner from "react-native-loading-spinner-overlay";
 import haversine from "haversine";
@@ -43,12 +38,7 @@ import HeaderHome from "./Layouts/Header";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { GetOnlineStatus } from "../Actions/OnlineStatusAction";
 const { width, height } = Dimensions.get("window");
-import {
-  establishConnectionToSocket,
-  broadCastLocationChange,
-  socket,
-  disconnect
-} from "../socketFunctions";
+import { establishConnectionToSocket, broadCastLocationChange, socket, disconnect } from "../socketFunctions";
 import { Notifications } from "expo";
 import * as Permissions from "expo-permissions";
 import Constants from "expo-constants";
@@ -92,44 +82,41 @@ class MainActivity extends Component {
     this.animation = new Animated.Value(0);
   }
   registerForPushNotificationsAsync = async () => {
-    if (Constants.isDevice) {
-      const { status: existingStatus } = await Permissions.getAsync(
-        Permissions.NOTIFICATIONS
-      );
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Permissions.askAsync(
-          Permissions.NOTIFICATIONS
-        );
-        finalStatus = status;
+    try {
+      if (Constants.isDevice) {
+        const { status: existingStatus } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+        let finalStatus = existingStatus;
+        if (existingStatus !== "granted") {
+          const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+          finalStatus = status;
+        }
+        if (finalStatus !== "granted") {
+          alert("Failed to get push token for push notification!");
+          return;
+        }
+        token = await Notifications.getExpoPushTokenAsync();
+        console.log(token);
+        this.setState({ expoPushToken: token });
+      } else {
+        alert("Must use physical device for Push Notifications");
       }
-      if (finalStatus !== "granted") {
-        alert("Failed to get push token for push notification!");
-        return;
-      }
-      token = await Notifications.getExpoPushTokenAsync();
-      console.log(token);
-      this.setState({ expoPushToken: token });
-    } else {
-      alert("Must use physical device for Push Notifications");
-    }
 
-    if (Platform.OS === "android") {
-      Notifications.createChannelAndroidAsync("default", {
-        name: "default",
-        sound: true,
-        priority: "max",
-        vibrate: [0, 250, 250, 250],
-      });
+      if (Platform.OS === "android") {
+        Notifications.createChannelAndroidAsync("default", {
+          name: "default",
+          sound: true,
+          priority: "max",
+          vibrate: [0, 250, 250, 250],
+        });
+      }
+    } catch (e) {
+      console.log(e.message);
     }
   };
   listenForCustomerMovement() {
-    socket.on(
-      "customer-movement-" + this.state.customerDetails.userid,
-      (movement) => {
-        this.setState({ customerMovement: movement });
-      }
-    );
+    socket.on("customer-movement-" + this.state.customerDetails.userid, (movement) => {
+      this.setState({ customerMovement: movement });
+    });
   }
   makeDecision(decisionObj) {
     socket.emit("request-decision", decisionObj);
@@ -208,32 +195,17 @@ class MainActivity extends Component {
       >
         <View style={styles.modalcontainer}>
           <View style={styles.tripDetails}>
-            <Image
-              source={require("../assets/city.jpg")}
-              style={styles.thumbnail}
-            />
+            <Image source={require("../assets/city.jpg")} style={styles.thumbnail} />
             <View style={styles.metadata}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-              {this.state.reqdetails.name}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: "bold" }}>
-                Pickup : {this.state.reqdetails.pickup}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: "bold" }}>
-                Drop Off : {this.state.reqdetails.destination}
-              </Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>{this.state.reqdetails.name}</Text>
+              <Text style={{ fontSize: 12, fontWeight: "bold" }}>Pickup : {this.state.reqdetails.pickup}</Text>
+              <Text style={{ fontSize: 12, fontWeight: "bold" }}>Drop Off : {this.state.reqdetails.destination}</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.acceptButton}
-            onPress={() => this.yes(this.state.reqdetails)}
-          >
+          <TouchableOpacity style={styles.acceptButton} onPress={() => this.yes(this.state.reqdetails)}>
             <Text style={styles.acceptButtonText}>Accept</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.declineButton}
-            onPress={() => this.no(this.state.reqdetails)}
-          >
+          <TouchableOpacity style={styles.declineButton} onPress={() => this.no(this.state.reqdetails)}>
             <Text style={styles.declineButtonText}>Decline</Text>
           </TouchableOpacity>
         </View>
@@ -246,7 +218,7 @@ class MainActivity extends Component {
   }
   _handleNotification = (notification) => {
     Vibration.vibrate();
-    console.log(notification);
+    //console.log(notification, "das");
     this.setState({ notification: notification });
   };
 
@@ -255,14 +227,13 @@ class MainActivity extends Component {
     if (!this.props.authStatus.isAuthenticated) {
       this.props.navigation.dispatch(StackActions.replace("Intro"));
     }
-   await  this.registerForPushNotificationsAsync();
-    this._notificationSubscription = Notifications.addListener(
-      this._handleNotification
-    );
+    //console.log(this.props.authStatus);
+    await this.registerForPushNotificationsAsync();
+    this._notificationSubscription = Notifications.addListener(this._handleNotification);
     try {
       let { status } = await Location.requestPermissionsAsync();
       if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
+        console.log("Permission to access location was denied");
       }
       // listen for customer movements
       if (this.state.has_customer) {
@@ -283,8 +254,10 @@ class MainActivity extends Component {
         speed: pos.coords.speed,
         bearing: pos.coords.heading,
       };
+
       await this.props.getCurrentLocation(data);
       this.setState({ bearing: pos.coords.heading, loading: false });
+
       this.watchID = await Location.watchPositionAsync(
         {
           enableHighAccuracy: true,
@@ -298,10 +271,10 @@ class MainActivity extends Component {
             latitude,
             longitude,
             accuracy,
-            riderid: this.props.authStatus.user.id,
+            riderid: this.props.authStatus.id,
             NotificationToken: this.state.expoPushToken,
           };
-          console.log(newCoordinate)
+          //console.log(newCoordinate);
 
           await this.props.getCurrentLocation(newCoordinate);
           const duration = 1000;
@@ -312,18 +285,18 @@ class MainActivity extends Component {
               duration,
             })
             .start();
-          console.log(this.state.has_customer, this.props.onlineStatus);
+          // console.log(this.state.has_customer, this.props.onlineStatus);
           if (!this.state.has_customer && this.props.onlineStatus) {
             establishConnectionToSocket({
-              riderid: this.props.authStatus.user.id,
+              riderid: this.props.authStatus.id,
             });
             broadCastLocationChange(newCoordinate);
             console.log("sending");
             this.ListenForRideRequest();
-          }
-          {
-            disconnect({});
-            
+          } 
+          if (!this.props.onlineStatus) {
+            console.log("disconnected"); 
+            disconnect({ data: "sdf" });
           }
           //this.state.coordinate.timing(newCoordinate).start();
 
@@ -365,180 +338,165 @@ class MainActivity extends Component {
     }
     return (
       <View style={{ flex: 1 }}>
-        <StatusBar
-          barStyle="dark-content"
-          translucent={true}
-          backgroundColor={"transparent"}
-        />
+        <StatusBar barStyle="dark-content" translucent={true} backgroundColor={"transparent"} />
         <Drawer
           ref={(ref) => {
             this.drawer = ref;
           }}
-          content={
-            <Sidebar
-              navigation={this.props.navigation}
-              authdata={this.props.authStatus}
-            />
-          }
+          content={<Sidebar navigation={this.props.navigation} authdata={this.props.authStatus} />}
         >
           <View style={styles.container}>
-            
-              <MapView
-                provider={PROVIDER_GOOGLE}
-                showUserLocation
-                followsUserLocation={false}
-                //customMapStyle={data}
-                onRegionChangeComplete={(changed) => {
-                  const currentregion = this.getCurrentRegion();
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              showUserLocation
+              followsUserLocation={false}
+              //customMapStyle={data}
+              loadingEnabled
+              onRegionChangeComplete={(changed) => {
+                const currentregion = this.getCurrentRegion();
 
-                  if (
-                    currentregion.latitude.toFixed(3) ==
-                      changed.latitude.toFixed(3) &&
-                    currentregion.longitude.toFixed(3) ==
-                      changed.longitude.toFixed(3)
-                  ) {
-                    this.setState({ onRegionChange: false });
-                  } else {
-                    this.setState({ onRegionChange: true });
+                if (
+                  currentregion.latitude.toFixed(3) == changed.latitude.toFixed(3) &&
+                  currentregion.longitude.toFixed(3) == changed.longitude.toFixed(3)
+                ) {
+                  this.setState({ onRegionChange: false });
+                } else {
+                  this.setState({ onRegionChange: true });
+                }
+              }}
+              initialRegion={this.getCurrentRegion()}
+              //onRegionChange={this.getCurrentRegion()}
+              style={{ ...StyleSheet.absoluteFillObject }}
+              ref={(ref) => {
+                this.map = ref;
+              }}
+            >
+              <MapView.Marker.Animated
+                ref={(marker) => {
+                  this.markerUser = marker;
+                }}
+                style={
+                  {
+                    // transform: [
+                    //   {
+                    //     rotate:
+                    //       this.state.bearing === undefined
+                    //         ? "0deg"
+                    //         : `${this.state.bearing}deg`,
+                    //   },
+                    // ],
                   }
-                }}
-                initialRegion={this.getCurrentRegion()}
-                //onRegionChange={this.getCurrentRegion()}
-                style={{ ...StyleSheet.absoluteFillObject }}
-                ref={(ref) => {
-                  this.map = ref;
-                }}
+                }
+                coordinate={this.getCurrentRegion()}
               >
-                <MapView.Marker.Animated
+                <UserMarker />
+                {/* <Animated.View style={styles.marker}>
+                    <View style={styles.dot} />
+                    <View style={styles.pulse} />
+                  </Animated.View> */}
+
+                {/* <Animated.View style={[styles.markerWrap]}>
+                    <Animated.View style={[styles.ring]} />
+                    <View style={styles.marker} />
+                  </Animated.View> */}
+              </MapView.Marker.Animated>
+              {this.state.has_customer ? (
+                <Marker.Animated
                   ref={(marker) => {
-                    this.markerUser = marker;
+                    this.markerCustomer = marker;
                   }}
                   style={
                     {
                       // transform: [
                       //   {
-                      //     rotate:
-                      //       this.state.bearing === undefined
-                      //         ? "0deg"
-                      //         : `${this.state.bearing}deg`,
+                      //     rotate: `${this.state.customerDetails.bearing}deg`,
                       //   },
                       // ],
                     }
                   }
-                  coordinate={this.getCurrentRegion()}
-                >
-                  <UserMarker />
-                  {/* <Animated.View style={styles.marker}>
-                    <View style={styles.dot} />
-                    <View style={styles.pulse} />
-                  </Animated.View> */}
+                  coordinate={{
+                    latitude: this.state.customerDetails.latitude,
+                    longitude: this.state.customerDetails.longitude,
+                    latitudeDelta: LATITUDE_DELTA,
+                    longitudeDelta: LONGITUDE_DELTA,
+                  }}
+                />
+              ) : null}
 
-                  {/* <Animated.View style={[styles.markerWrap]}>
-                    <Animated.View style={[styles.ring]} />
-                    <View style={styles.marker} />
-                  </Animated.View> */}
-                </MapView.Marker.Animated>
-                {this.state.has_customer ? (
-                  <Marker.Animated
-                    ref={(marker) => {
-                      this.markerCustomer = marker;
-                    }}
-                    style={
+              {this.state.has_customer ? (
+                <MapViewDirections
+                  mode={"DRIVING"}
+                  strokeColor="#e7564c"
+                  optimizeWaypoints={false}
+                  resetOnChange={false}
+                  origin={{
+                    ...this.props.origin,
+                    LONGITUDE_DELTA: 0.9,
+                    LATITUDE_DELTA: 0.9,
+                  }}
+                  destination={{
+                    latitude: this.state.customerDetails.latitude,
+                    longitude: this.state.customerDetails.longitude,
+                  }}
+                  strokeWidth={3}
+                  strokeColor="#3d6dfe"
+                  optimizeWaypoints={true}
+                  apikey={GOOGLE_MAPS_APIKEY}
+                  onStart={(params) => {
+                    console.log(`Started routing between "${params.origin}" and "${params.destination}"`);
+                  }}
+                  onReady={async (result) => {
+                    await this.setState({
+                      distance: result.distance,
+                      duration: result.duration,
+                    });
+                    /// this.calculatePrice();
+                    // console.log(`Distance: ${result.distance} km`);
+                    // console.log(`Duration: ${result.duration} min.`);
+
+                    // this.map.fitToCoordinates(result.coordinates, {
+                    //   edgePadding: {
+                    //     right: width / 50,
+                    //     bottom: height / 50,
+                    //     left: width / 50,
+                    //     top: height / 50,
+                    //   },
+                    // });
+                    //this.map.animateToViewingAngle(70,1000)
+                    // this.map.animateCamera(
+                    //   {
+                    //     center: this.props.origin
+
+                    //     ,
+                    //     pitch: 20,
+                    //     heading: 120,
+                    //     altitude: 200,
+                    //     zoom: 10,
+                    //   },
+                    //   1000
+                    // );
+                    this.mapView.animateCamera(
                       {
-                        // transform: [
-                        //   {
-                        //     rotate: `${this.state.customerDetails.bearing}deg`,
-                        //   },
-                        // ],
-                      }
-                    }
-                    coordinate={{
-                      latitude: this.state.customerDetails.latitude,
-                      longitude: this.state.customerDetails.longitude,
-                      latitudeDelta: LATITUDE_DELTA,
-                      longitudeDelta: LONGITUDE_DELTA,
-                    }}
-                  />
-                ) : null}
-
-                {this.state.has_customer ? (
-                  <MapViewDirections
-                    mode={"DRIVING"}
-                    strokeColor="#e7564c"
-                    optimizeWaypoints={false}
-                    resetOnChange={false}
-                    origin={{
-                      ...this.props.origin,
-                      LONGITUDE_DELTA: 0.9,
-                      LATITUDE_DELTA: 0.9,
-                    }}
-                    destination={{
-                      latitude: this.state.customerDetails.latitude,
-                      longitude: this.state.customerDetails.longitude,
-                    }}
-                    strokeWidth={3}
-                    strokeColor="#3d6dfe"
-                    optimizeWaypoints={true}
-                    apikey={GOOGLE_MAPS_APIKEY}
-                    onStart={(params) => {
-                      console.log(
-                        `Started routing between "${params.origin}" and "${
-                          params.destination
-                        }"`
-                      );
-                    }}
-                    onReady={async (result) => {
-                      await this.setState({
-                        distance: result.distance,
-                        duration: result.duration,
-                      });
-                      /// this.calculatePrice();
-                      // console.log(`Distance: ${result.distance} km`);
-                      // console.log(`Duration: ${result.duration} min.`);
-
-                      // this.map.fitToCoordinates(result.coordinates, {
-                      //   edgePadding: {
-                      //     right: width / 50,
-                      //     bottom: height / 50,
-                      //     left: width / 50,
-                      //     top: height / 50,
-                      //   },
-                      // });
-                      //this.map.animateToViewingAngle(70,1000)
-                      // this.map.animateCamera(
-                      //   {
-                      //     center: this.props.origin
-
-                      //     ,
-                      //     pitch: 20,
-                      //     heading: 120,
-                      //     altitude: 200,
-                      //     zoom: 10,
-                      //   },
-                      //   1000
-                      // );
-                      this.mapView.animateCamera(
-                        {
-                          center: {
-                            ...this.props.origin,
-                            LATITUDE_DELTA: 0.9,
-                            LONGITUDE_DELTA: 0.9,
-                          },
-                          pitch: 29,
-                          heading: 50,
-                          altitude: 12,
-                          zoom: 12,
+                        center: {
+                          ...this.props.origin,
+                          LATITUDE_DELTA: 0.9,
+                          LONGITUDE_DELTA: 0.9,
                         },
-                        1000
-                      );
-                    }}
-                    onError={(errorMessage) => {
-                      console.log("GOT AN ERROR");
-                    }}
-                  />
-                ) : null}
-              </MapView>
-            
+                        pitch: 29,
+                        heading: 50,
+                        altitude: 12,
+                        zoom: 12,
+                      },
+                      1000
+                    );
+                  }}
+                  onError={(errorMessage) => {
+                    console.log("GOT AN ERROR");
+                  }}
+                />
+              ) : null}
+            </MapView>
+
             {/* <Toolbar
               icon={"menu"}
               notbackAction={true}
@@ -561,12 +519,7 @@ class MainActivity extends Component {
                   elevation: 84,
                 }}
               >
-                <FontAwesome5
-                  name="crosshairs"
-                  size={24}
-                  color="#000"
-                  style={{ margin: 2 }}
-                />
+                <FontAwesome5 name="crosshairs" size={24} color="#000" style={{ margin: 2 }} />
               </TouchableOpacity>
             ) : null}
             <HeaderHome

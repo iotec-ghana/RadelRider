@@ -36,7 +36,7 @@ export const Offline = (isonline) => async (dispatch) => {
       JSON.stringify({ online: false })
     );
     await Location.stopLocationUpdatesAsync(taskName);
-    console.log("off complete 1");
+ // console.log(isonline,"FSd");
     dispatch({
       type: GO_OFFLINE,
       payload: isonline,

@@ -36,10 +36,10 @@ class HeaderHome extends Component {
   }
   async ToggleStatus(online) {
     this.setState({ online: online });
-    console.log(online);
+   // console.log(online);
     if (online) {
       await this.props.Online(online);
-      console.log("done");
+      //console.log("done");
     } else {
       await this.props.Offline(online);
     }
@@ -48,7 +48,7 @@ class HeaderHome extends Component {
   async componentDidMount() {
     await this.props.GetOnlineStatus();
     this.setState({ online: this.props.onlineStatus });
-    console.log(this.props.onlineStatus, "from local storage");
+    //console.log(this.props.onlineStatus, "from local storage");
     if (this.state.online) {
       if (status === "granted") {
         await Location.startLocationUpdatesAsync(taskName, {
@@ -202,7 +202,7 @@ TaskManager.defineTask(taskName, async ({ data, error }) => {
     // const user = await AsyncStorage.getItem('authdata');
     // const data = JSON.parse(user);
     const { locations } = data;
-    console.log(locations[0].coords, "bg");
+   // console.log(locations[0].coords, "bg");
     const read = await AsyncStorage.getItem("onlineStatus");
     const status = JSON.parse(read);
     const readAuthdata = await AsyncStorage.getItem("authdata");
@@ -210,9 +210,9 @@ TaskManager.defineTask(taskName, async ({ data, error }) => {
     const riderid = authdata.user.id;
     // console.log(riderid);
     if (status.online) {
-      console.log("broadcasting data");
+     // console.log("broadcasting data");
       establishConnectionToSocket({ riderid: riderid });
-      broadCastLocationChange({ ...locations[0].coords, riderid: riderid });
+      broadCastLocationChange({ ...locations[0].coords, riderid: riderid }); 
       // Toast.show({
       //   text: JSON.stringify(locations),
       //   buttonText: "Okay",

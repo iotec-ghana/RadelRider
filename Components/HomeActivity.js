@@ -24,7 +24,7 @@ export default class HomeActivity extends Component {
             if (route.name === "Home") {
               iconName = focused ? "compass" : "compass";
             } else if (route.name === "Earnings") {
-              iconName = focused ? "trending-up" : "trending-up";
+              iconName = focused ? "bar-chart-2" : "bar-chart-2";
             } else if (route.name === "Settings") {
               iconName = focused ? "settings" : "settings";
             } else if (route.name === "Profile") {

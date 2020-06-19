@@ -38,3 +38,4 @@ export function makeDecision(decisionObj) {
 export function tracking(trackingData) {
   socket.emit("track-rider", trackingData);
 }
+  
