@@ -10,6 +10,7 @@ export default class Toolbar extends Component {
     return (
       <View style={styles.header,{backgroundColor:this.props.bg}}>
         <Header transparent>
+          
           <Left>
             <Button
               transparent

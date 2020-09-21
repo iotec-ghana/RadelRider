@@ -111,7 +111,7 @@ class RootComponent extends Component {
         initialRouteName="Home"
         screenOptions={{ headerShown: false }}
       >
-        <MainStack.Screen name="Intro" component={Intro} z />
+        <MainStack.Screen name="Intro" component={Intro} />
         <MainStack.Screen
           name="Login"
           options={{

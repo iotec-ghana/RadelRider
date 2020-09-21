@@ -13,7 +13,9 @@ export default class HomeActivity extends Component {
     super(props);
     this.state = {};
   }
-  async componentDidMount() {}
+  async componentDidMount() {
+    
+  }
   render() {
     return (
       <Tab.Navigator
@@ -35,13 +37,19 @@ export default class HomeActivity extends Component {
             return <Feather name={iconName} size={24} color={color} />;
           },
         })}
-        labeled={false}
+        //labeled={false}
         activeColor="#3d6dfe"
         inactiveColor="gray"
         barStyle={{ backgroundColor: "#fff" }}
       >
-        <Tab.Screen name="Home" component={MapActivity} />
-        <Tab.Screen name="Earnings" component={MyEarningsActivity} />
+        <Tab.Screen
+          name="Home"
+          component={MapActivity}
+          options={{
+            title: "Home",
+          }}
+        />
+        <Tab.Screen name="Earnings"  options={{ headerTitle: props => <Toolbar {...props} /> }} component={MyEarningsActivity} />
         <Tab.Screen name="Settings" component={SettingsActivity} />
       </Tab.Navigator>
     );

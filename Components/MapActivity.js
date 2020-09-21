@@ -246,7 +246,7 @@ class MainActivity extends Component {
           })
           .start();
       }
-      let pos = await Location.getCurrentPositionAsync({});
+      let pos = await Location.getCurrentPositionAsync({ enableHighAccuracy: true,});
       // const Oname = await this.getLocationName(data);
       const data = {
         latitude: pos.coords.latitude,

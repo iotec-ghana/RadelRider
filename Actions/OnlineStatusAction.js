@@ -7,24 +7,28 @@ export const Online = (isonline) => async (dispatch) => {
   try {
    
     const { status } = await Location.requestPermissionsAsync();
+    
     if (status === "granted") {
       await Location.startLocationUpdatesAsync(taskName, {
         accuracy: Location.Accuracy.Balanced,
       })
-     
+      alert("granted") 
     }
-    
+    else{  
+      alert("denied") 
+    }
+     
     await AsyncStorage.setItem(
       "onlineStatus",
       JSON.stringify({ online: true }) 
-    );
+    ); 
    
     dispatch({
-      type: COME_ONLINE,
+      type: COME_ONLINE, 
       payload: isonline,
     });
-  } catch (e) {
-      console.log(e.message)
+  } catch (e) { 
+      alert(e.message )
   }
 };
 

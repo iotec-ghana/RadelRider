@@ -6,19 +6,23 @@ const { width, height } = Dimensions.get("window");
 //import ChartTheme from './Themes/ChartTheme';
 import { VictoryBar, VictoryChart, VictoryTheme } from "victory-native";
 const data = [
-  { quarter: "S", earnings: 13000 },
-  { quarter: "M", earnings: 16500 },
-  { quarter: "T", earnings: 14250 },
-  { quarter: "W", earnings: 21900 },
-  { quarter: "TH", earnings: 19500 },
-  { quarter: "F", earnings: 19000 },
-  { quarter: "SA", earnings: 19000 },
+  { day: "S", earnings: 1300 },
+  { day: "M", earnings: 1650 },
+  { day: "T", earnings: 1425 },
+  { day: "W", earnings: 2190 },
+  { day: "TH", earnings: 1950 },
+  { day: "F", earnings: 1900 },
+  { day: "SA", earnings: 1900 },
 ];
 
 export default class MyEarningsActivity extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+  componentDidMount(){
+    //this.props.navigation.setOptions({ headerTitle:this.props=> <Toolbar {...this.props}/>})
+    //console.log(this.props.navigation)
   }
   summary() {
     return (
@@ -125,7 +129,7 @@ export default class MyEarningsActivity extends Component {
                 <Text style={{fontSize:12,fontWeight:"bold"}}>GHC7000</Text>
                 </View>
                 <VictoryChart width={width} theme={VictoryTheme.material}>
-                  <VictoryBar data={data} x="quarter" y="earnings" />
+                  <VictoryBar data={data} x="day" y="earnings" />
                 </VictoryChart>
               </View>
             </View>

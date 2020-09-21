@@ -1,17 +1,17 @@
-import React, { Component } from 'react';
-import { View, Text,Image,StyleSheet } from 'react-native';
+import React, { Component } from "react";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Right } from "native-base";
 
 class OnGoingTrip extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-    };
+    this.state = {};
   }
 
   render() {
     return (
-        <View
+      <View
         style={{
           marginTop: 70,
           padding: 15,
@@ -22,7 +22,7 @@ class OnGoingTrip extends Component {
           marginLeft: 10,
         }}
       >
-        <View style={{ margin: 3 }}>
+        <View style={{ margin: 3, flexDirection: "row" }}>
           <Text
             style={{
               fontWeight: "bold",
@@ -32,6 +32,9 @@ class OnGoingTrip extends Component {
           >
             Ongoing Trip
           </Text>
+          <TouchableOpacity style={{ position: "absolute", right: 0 }} >
+            <Feather name={"more-vertical"} size={20} color="#000" />
+          </TouchableOpacity>
         </View>
         <View style={{ flexDirection: "row", marginBottom: 9 }}>
           <Image style={styles.imageCustomer} source={require("../../../assets/deedat.jpg")} />
@@ -39,7 +42,6 @@ class OnGoingTrip extends Component {
             style={{
               margin: 10,
               fontWeight: "bold",
-              opacity: 0.7,
               fontSize: 16,
             }}
           >
@@ -50,7 +52,7 @@ class OnGoingTrip extends Component {
               style={{
                 fontWeight: "bold",
                 opacity: 0.7,
-                fontSize: 16,
+                fontSize: 15,
                 margin: 5,
               }}
             >
@@ -82,7 +84,7 @@ class OnGoingTrip extends Component {
 }
 
 export default OnGoingTrip;
-const styles=StyleSheet.create({
+const styles = StyleSheet.create({
   imageCustomer: {
     borderColor: "#fff",
     height: 50,
@@ -90,4 +92,4 @@ const styles=StyleSheet.create({
     borderWidth: 2,
     borderRadius: 100,
   },
-})
+});

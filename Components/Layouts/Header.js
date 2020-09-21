@@ -40,8 +40,10 @@ class HeaderHome extends Component {
     if (online) {
       await this.props.Online(online);
       //console.log("done");
+      // alert("online") 
     } else {
       await this.props.Offline(online);
+      // alert("offline")
     }
   }
 
@@ -195,10 +197,12 @@ const styles = StyleSheet.create({
 TaskManager.defineTask(taskName, async ({ data, error }) => {
   if (error) {
     // Error occurred - check `error.message` for more details.
-    console.log(error);
+    console.log(error,"mess");
+    alert("error")
     return;
   }
   if (data) {
+    // alert("errords")
     // const user = await AsyncStorage.getItem('authdata');
     // const data = JSON.parse(user);
     const { locations } = data;
